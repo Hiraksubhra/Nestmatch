@@ -194,8 +194,7 @@ export const Navbar = () => {
       <Modal
         isOpen={showLogoutConfirm}
         onClose={() => !isLoggingOut && setShowLogoutConfirm(false)}
-        title="Sign out of NestMatch?"
-        description="Are you sure you want to sign out? You will need to enter your email and password to sign back in."
+        title="Are you sure you want to sign out?"
       >
         <div className="flex items-center justify-end gap-3 pt-2">
           <Button
