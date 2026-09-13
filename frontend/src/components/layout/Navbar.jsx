@@ -5,15 +5,24 @@ import { useAuthStore } from '../../store/authStore'
 import { ROUTES } from '../../constants/routes'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
+import { Modal } from '../ui/Modal'
 
 export const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuthStore()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
-    await logout()
-    navigate(ROUTES.HOME)
+    setIsLoggingOut(true)
+    try {
+      await logout()
+      setShowLogoutConfirm(false)
+      navigate(ROUTES.HOME)
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   const dashboardRoute = user?.role === 'LANDLORD' ? ROUTES.LANDLORD_DASHBOARD : ROUTES.STUDENT_DASHBOARD
@@ -84,7 +93,7 @@ export const Navbar = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 aria-label="Log out"
                 className="text-neutral-600 hover:text-danger"
               >
@@ -156,7 +165,7 @@ export const Navbar = () => {
                   fullWidth
                   onClick={() => {
                     setMobileMenuOpen(false)
-                    handleLogout()
+                    setShowLogoutConfirm(true)
                   }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -180,6 +189,33 @@ export const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Sign Out Confirmation Modal */}
+      <Modal
+        isOpen={showLogoutConfirm}
+        onClose={() => !isLoggingOut && setShowLogoutConfirm(false)}
+        title="Sign out of NestMatch?"
+        description="Are you sure you want to sign out? You will need to enter your email and password to sign back in."
+      >
+        <div className="flex items-center justify-end gap-3 pt-2">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => setShowLogoutConfirm(false)}
+            disabled={isLoggingOut}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="danger"
+            size="md"
+            onClick={handleLogout}
+            isLoading={isLoggingOut}
+          >
+            Sign out
+          </Button>
+        </div>
+      </Modal>
     </header>
   )
 }
