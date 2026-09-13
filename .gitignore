@@ -1,0 +1,38 @@
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python / Backend
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+backend/*/*/*/__pycache__/
+*.py[cod]
+*$py.class
+backend/.pytest_cache/
+backend/.venv/
+backend/env/
+backend/venv/
+backend/*.db
+backend/*.sqlite3
+backend/*.sqlite
+
+# Environment Files
+.env
+.env.local
+frontend/.env
+backend/.env
+*.env
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
