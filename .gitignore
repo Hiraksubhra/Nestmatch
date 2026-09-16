@@ -36,3 +36,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Markdown & Documentation (except README and GitHub templates)
+*.md
+!README.md
+!.github/**/*.md
