@@ -1,4 +1,4 @@
-# CLAUDE.md — Student Housing Platform: Master Project Reference
+# Gemini.md — Student Housing Platform: Master Project Reference
 
 > **Purpose:** This file is the single source of truth for the entire project. Every team member and AI assistant working on this codebase should read this file before making any decisions. It covers product vision, functional requirements, architecture, data models, API contracts, sprint planning, and team assignments.
 
