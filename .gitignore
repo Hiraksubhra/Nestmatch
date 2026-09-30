@@ -59,8 +59,8 @@ Thumbs.db
 *.swp
 *.swo
 
-# Markdown & Documentation (keep README, TM1 setup guide, and GitHub templates)
+# Markdown & Documentation (ignore all markdown files except README)
 *.md
+**/*.md
 !README.md
-!TM1_SETUP_GUIDE.md
-!.github/**/*.md
+!readme.md

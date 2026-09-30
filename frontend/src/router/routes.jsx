@@ -8,6 +8,10 @@ import { Login } from '../pages/auth/Login'
 import { Register } from '../pages/auth/Register'
 import { StudentDashboard } from '../pages/dashboard/StudentDashboard'
 import { LandlordDashboard } from '../pages/dashboard/LandlordDashboard'
+import { SearchResults } from '../pages/listings/SearchResults'
+import { ListingDetail } from '../pages/listings/ListingDetail'
+import { CreateListing } from '../pages/landlord/CreateListing'
+import { MyListings } from '../pages/landlord/MyListings'
 
 export const AppRoutes = () => {
   return (
@@ -16,6 +20,8 @@ export const AppRoutes = () => {
         <Route index element={<Home />} />
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.REGISTER} element={<Register />} />
+        <Route path={ROUTES.SEARCH} element={<SearchResults />} />
+        <Route path={ROUTES.LISTING_DETAIL} element={<ListingDetail />} />
 
         {/* Protected Student Dashboard */}
         <Route
@@ -27,12 +33,28 @@ export const AppRoutes = () => {
           }
         />
 
-        {/* Protected Landlord Dashboard */}
+        {/* Protected Landlord Routes */}
         <Route
           path={ROUTES.LANDLORD_DASHBOARD}
           element={
             <ProtectedRoute allowedRoles={['LANDLORD', 'ADMIN']}>
               <LandlordDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.CREATE_LISTING}
+          element={
+            <ProtectedRoute allowedRoles={['LANDLORD', 'ADMIN']}>
+              <CreateListing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.MY_LISTINGS}
+          element={
+            <ProtectedRoute allowedRoles={['LANDLORD', 'ADMIN']}>
+              <MyListings />
             </ProtectedRoute>
           }
         />

@@ -45,31 +45,42 @@ export const Navbar = () => {
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-6">
           <Link
-            to={ROUTES.HOME}
+            to={ROUTES.SEARCH}
             className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
           >
             Find homes
           </Link>
-          <Link
-            to={ROUTES.FLATMATES}
-            className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
-          >
-            Roommates
-          </Link>
           {user?.role === 'LANDLORD' ? (
-            <Link
-              to={ROUTES.CREATE_LISTING}
-              className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
-            >
-              Post listing
-            </Link>
+            <>
+              <Link
+                to={ROUTES.MY_LISTINGS}
+                className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
+              >
+                My listings
+              </Link>
+              <Link
+                to={ROUTES.CREATE_LISTING}
+                className="text-primary hover:text-primary-dark font-semibold transition-colors text-sm flex items-center gap-1"
+              >
+                <PlusCircle size={16} />
+                Post listing
+              </Link>
+            </>
           ) : (
-            <Link
-              to={ROUTES.REGISTER}
-              className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
-            >
-              List a property
-            </Link>
+            <>
+              <Link
+                to={ROUTES.FLATMATES}
+                className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
+              >
+                Roommates
+              </Link>
+              <Link
+                to="/login?role=landlord"
+                className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
+              >
+                Landlord portal
+              </Link>
+            </>
           )}
         </nav>
 
@@ -133,21 +144,52 @@ export const Navbar = () => {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-neutral-200 bg-white px-4 py-4 space-y-3">
           <Link
-            to={ROUTES.HOME}
+            to={ROUTES.SEARCH}
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
           >
             <Search className="w-4 h-4 text-neutral-400" />
             Find homes
           </Link>
-          <Link
-            to={ROUTES.FLATMATES}
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
-          >
-            <Users className="w-4 h-4 text-neutral-400" />
-            Roommates
-          </Link>
+          {user?.role === 'LANDLORD' ? (
+            <>
+              <Link
+                to={ROUTES.MY_LISTINGS}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+              >
+                <Home className="w-4 h-4 text-neutral-400" />
+                My listings
+              </Link>
+              <Link
+                to={ROUTES.CREATE_LISTING}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 py-2 text-primary font-semibold"
+              >
+                <PlusCircle className="w-4 h-4 text-primary" />
+                Post listing
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to={ROUTES.FLATMATES}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+              >
+                <Users className="w-4 h-4 text-neutral-400" />
+                Roommates
+              </Link>
+              <Link
+                to="/login?role=landlord"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+              >
+                <Home className="w-4 h-4 text-neutral-400" />
+                Landlord portal
+              </Link>
+            </>
+          )}
           <div className="pt-3 border-t border-neutral-100 space-y-2">
             {isAuthenticated && user ? (
               <>
