@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, User as UserIcon, LogOut, Home, Search, Users, PlusCircle } from 'lucide-react'
+import { Menu, X, User as UserIcon, LogOut, Home, Search, Users, PlusCircle, MessageSquare, Calendar } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { ROUTES } from '../../constants/routes'
 import { Button } from '../ui/Button'
@@ -50,8 +50,24 @@ export const Navbar = () => {
           >
             Find homes
           </Link>
+          {isAuthenticated && (
+            <Link
+              to={ROUTES.MESSAGES}
+              className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
+            >
+              <MessageSquare size={15} />
+              Messages
+            </Link>
+          )}
           {user?.role === 'LANDLORD' ? (
             <>
+              <Link
+                to={ROUTES.LANDLORD_BOOKINGS}
+                className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
+              >
+                <Calendar size={15} />
+                Bookings
+              </Link>
               <Link
                 to={ROUTES.MY_LISTINGS}
                 className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
@@ -68,18 +84,29 @@ export const Navbar = () => {
             </>
           ) : (
             <>
+              {isAuthenticated && (
+                <Link
+                  to={ROUTES.STUDENT_BOOKINGS}
+                  className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
+                >
+                  <Calendar size={15} />
+                  My Bookings
+                </Link>
+              )}
               <Link
                 to={ROUTES.FLATMATES}
                 className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
               >
                 Roommates
               </Link>
-              <Link
-                to="/login?role=landlord"
-                className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
-              >
-                Landlord portal
-              </Link>
+              {!isAuthenticated && (
+                <Link
+                  to="/login?role=landlord"
+                  className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
+                >
+                  Landlord portal
+                </Link>
+              )}
             </>
           )}
         </nav>
@@ -151,8 +178,26 @@ export const Navbar = () => {
             <Search className="w-4 h-4 text-neutral-400" />
             Find homes
           </Link>
+          {isAuthenticated && (
+            <Link
+              to={ROUTES.MESSAGES}
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+            >
+              <MessageSquare className="w-4 h-4 text-primary" />
+              Messages
+            </Link>
+          )}
           {user?.role === 'LANDLORD' ? (
             <>
+              <Link
+                to={ROUTES.LANDLORD_BOOKINGS}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+              >
+                <Calendar className="w-4 h-4 text-primary" />
+                Booking Requests
+              </Link>
               <Link
                 to={ROUTES.MY_LISTINGS}
                 onClick={() => setMobileMenuOpen(false)}
@@ -172,6 +217,16 @@ export const Navbar = () => {
             </>
           ) : (
             <>
+              {isAuthenticated && (
+                <Link
+                  to={ROUTES.STUDENT_BOOKINGS}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+                >
+                  <Calendar className="w-4 h-4 text-primary" />
+                  My Bookings
+                </Link>
+              )}
               <Link
                 to={ROUTES.FLATMATES}
                 onClick={() => setMobileMenuOpen(false)}
@@ -180,14 +235,16 @@ export const Navbar = () => {
                 <Users className="w-4 h-4 text-neutral-400" />
                 Roommates
               </Link>
-              <Link
-                to="/login?role=landlord"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
-              >
-                <Home className="w-4 h-4 text-neutral-400" />
-                Landlord portal
-              </Link>
+              {!isAuthenticated && (
+                <Link
+                  to="/login?role=landlord"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+                >
+                  <Home className="w-4 h-4 text-neutral-400" />
+                  Landlord portal
+                </Link>
+              )}
             </>
           )}
           <div className="pt-3 border-t border-neutral-100 space-y-2">

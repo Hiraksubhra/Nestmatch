@@ -11,6 +11,16 @@ from app.models.listing import (
     ListingStatus,
     RentPeriod,
 )
+from app.models.message import (
+    Conversation,
+    Message,
+    MessageType,
+    ConversationStatus,
+)
+from app.models.booking import (
+    BookingRequest,
+    BookingStatus,
+)
 
 __all__ = [
     "Base",
@@ -25,4 +35,10 @@ __all__ = [
     "FurnishedStatus",
     "ListingStatus",
     "RentPeriod",
+    "Conversation",
+    "Message",
+    "MessageType",
+    "ConversationStatus",
+    "BookingRequest",
+    "BookingStatus",
 ]

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   MapPin,
   ShieldCheck,
@@ -17,12 +17,17 @@ import {
   Building,
   Lock,
   LogIn,
+  CheckCircle,
+  X,
+  CreditCard,
 } from 'lucide-react'
 import { ROUTES } from '../../constants/routes'
 import { listingService } from '../../services/listingService'
+import { messagingService } from '../../services/messagingService'
+import { bookingService } from '../../services/bookingService'
 import { AmenityIcon } from '../../components/listings/AmenityIcon'
 import { useAuthStore } from '../../store/authStore'
-import { getImageUrl } from '../../lib/utils'
+import { getImageUrl, formatCurrency } from '../../lib/utils'
 
 const DEFAULT_IMAGES = [
   'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80',
@@ -38,8 +43,21 @@ export const ListingDetail = () => {
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigate = useNavigate()
   const [inquirySent, setInquirySent] = useState(false)
   const [inquiryText, setInquiryText] = useState('')
+  const [inquirySubmitting, setInquirySubmitting] = useState(false)
+
+  // Booking Modal States
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  const [moveInDate, setMoveInDate] = useState(tomorrow.toISOString().split('T')[0])
+  const [durationMonths, setDurationMonths] = useState(3)
+  const [bookingMessage, setBookingMessage] = useState('')
+  const [bookingSubmitting, setBookingSubmitting] = useState(false)
+  const [bookingError, setBookingError] = useState(null)
+  const [bookingSuccess, setBookingSuccess] = useState(false)
 
   useEffect(() => {
     setIsLoading(true)
@@ -48,6 +66,9 @@ export const ListingDetail = () => {
       .then((res) => {
         if (res.success && res.data) {
           setListing(res.data)
+          if (res.data.min_stay_months) {
+            setDurationMonths(res.data.min_stay_months)
+          }
         }
       })
       .catch((err) => {
@@ -94,9 +115,43 @@ export const ListingDetail = () => {
       ? listing.university_proximity[0]
       : null
 
-  const handleInquirySubmit = (e) => {
+  const handleInquirySubmit = async (e) => {
     e.preventDefault()
-    setInquirySent(true)
+    if (!inquiryText.trim() || inquirySubmitting) return
+
+    try {
+      setInquirySubmitting(true)
+      const conv = await messagingService.startConversation({
+        listing_id: listing.id,
+        initial_message: inquiryText.trim()
+      })
+      navigate(`/messages/${conv.id}`)
+    } catch (err) {
+      console.error('Failed to start conversation:', err)
+      alert(err.message || 'Failed to send inquiry')
+    } finally {
+      setInquirySubmitting(false)
+    }
+  }
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault()
+    setBookingError(null)
+
+    try {
+      setBookingSubmitting(true)
+      await bookingService.createBooking({
+        listing_id: listing.id,
+        move_in_date: moveInDate,
+        duration_months: parseInt(durationMonths, 10),
+        message: bookingMessage.trim() || undefined
+      })
+      setBookingSuccess(true)
+    } catch (err) {
+      setBookingError(err.message || 'Failed to submit booking request')
+    } finally {
+      setBookingSubmitting(false)
+    }
   }
 
   return (
@@ -356,23 +411,44 @@ export const ListingDetail = () => {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleInquirySubmit} className="space-y-3">
-                  <textarea
-                    rows={3}
-                    placeholder="Hi! I am a student interested in renting this place starting next month. Is it available for a viewing?"
-                    value={inquiryText}
-                    onChange={(e) => setInquiryText(e.target.value)}
-                    required
-                    className="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
-                  />
+                <div className="space-y-4">
                   <button
-                    type="submit"
-                    className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-semibold transition-colors shadow-sm flex items-center justify-center gap-2"
+                    onClick={() => {
+                      setIsBookingModalOpen(true)
+                      setBookingSuccess(false)
+                      setBookingError(null)
+                    }}
+                    className="w-full py-3.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                   >
-                    <MessageSquare size={16} />
-                    Send Free Inquiry
+                    <Calendar size={18} />
+                    Request to Book Property
                   </button>
-                </form>
+
+                  <div className="relative flex py-1 items-center">
+                    <div className="flex-grow border-t border-neutral-200"></div>
+                    <span className="flex-shrink mx-3 text-neutral-400 text-xs uppercase font-medium">Or Ask Questions</span>
+                    <div className="flex-grow border-t border-neutral-200"></div>
+                  </div>
+
+                  <form onSubmit={handleInquirySubmit} className="space-y-3">
+                    <textarea
+                      rows={3}
+                      placeholder="Hi! I am a student interested in renting this place. Is it available for a viewing?"
+                      value={inquiryText}
+                      onChange={(e) => setInquiryText(e.target.value)}
+                      required
+                      className="w-full p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                    />
+                    <button
+                      type="submit"
+                      disabled={inquirySubmitting}
+                      className="w-full py-2.5 bg-white border border-primary text-primary hover:bg-primary/5 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare size={16} />
+                      {inquirySubmitting ? 'Starting Chat...' : 'Send Message to Landlord'}
+                    </button>
+                  </form>
+                </div>
               )}
             </div>
 
@@ -405,6 +481,160 @@ export const ListingDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Request to Book Modal */}
+      {isBookingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-neutral-100 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setIsBookingModalOpen(false)}
+              className="absolute top-4 right-4 p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg hover:bg-neutral-100"
+            >
+              <X size={18} />
+            </button>
+
+            {bookingSuccess ? (
+              <div className="py-6 text-center space-y-4">
+                <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle size={32} />
+                </div>
+                <h3 className="text-xl font-bold font-heading text-neutral-900">
+                  Booking Request Submitted!
+                </h3>
+                <p className="text-sm text-neutral-600 leading-relaxed">
+                  Your request for <span className="font-semibold">{listing.title}</span> has been sent to the landlord.
+                  You can track the approval status and view confirmed contacts in your dashboard.
+                </p>
+                <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => {
+                      setIsBookingModalOpen(false)
+                      navigate('/bookings')
+                    }}
+                    className="px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark transition shadow-sm"
+                  >
+                    View My Bookings
+                  </button>
+                  <button
+                    onClick={() => setIsBookingModalOpen(false)}
+                    className="px-5 py-2.5 border border-neutral-200 text-neutral-700 rounded-xl text-sm font-medium hover:bg-neutral-50 transition"
+                  >
+                    Stay on Listing
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleBookingSubmit} className="space-y-4">
+                <div className="flex items-center gap-2 text-primary font-bold text-lg border-b border-neutral-100 pb-3">
+                  <Calendar size={22} />
+                  <span>Request to Book Accommodation</span>
+                </div>
+
+                {bookingError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+                    <AlertCircle size={16} className="shrink-0" />
+                    <span>{bookingError}</span>
+                  </div>
+                )}
+
+                <div className="bg-neutral-50 p-3 rounded-xl flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-neutral-400 block">Property</span>
+                    <span className="font-semibold text-neutral-900 truncate block max-w-xs">{listing.title}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-neutral-400 block">Rent</span>
+                    <span className="font-bold text-primary">{formatCurrency(listing.rent_amount)}/mo</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                      Requested Move-in Date *
+                    </label>
+                    <input
+                      type="date"
+                      min={tomorrow.toISOString().split('T')[0]}
+                      value={moveInDate}
+                      onChange={(e) => setMoveInDate(e.target.value)}
+                      required
+                      className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                      Stay Duration (Months) *
+                    </label>
+                    <select
+                      value={durationMonths}
+                      onChange={(e) => setDurationMonths(e.target.value)}
+                      className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    >
+                      {[1, 2, 3, 6, 9, 12].map((m) => (
+                        <option key={m} value={m}>
+                          {m} Month{m > 1 ? 's' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Pricing Estimate */}
+                <div className="p-3 bg-primary/5 border border-primary/20 rounded-xl text-xs space-y-1.5">
+                  <div className="flex justify-between text-neutral-600">
+                    <span>Rent ({durationMonths} months × {formatCurrency(listing.rent_amount)})</span>
+                    <span>{formatCurrency(listing.rent_amount * durationMonths)}</span>
+                  </div>
+                  {listing.deposit_amount && (
+                    <div className="flex justify-between text-neutral-600">
+                      <span>Security Deposit (refundable)</span>
+                      <span>{formatCurrency(listing.deposit_amount)}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-primary/20 pt-1 flex justify-between font-bold text-neutral-900 text-sm">
+                    <span>Total Estimate</span>
+                    <span className="text-primary">
+                      {formatCurrency(listing.rent_amount * durationMonths + (listing.deposit_amount || 0))}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-700 mb-1">
+                    Introduction / Note to Landlord (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Tell the landlord about your college/course, move-in flexibility, or requirements..."
+                    value={bookingMessage}
+                    onChange={(e) => setBookingMessage(e.target.value)}
+                    className="w-full p-2.5 bg-neutral-50 border border-neutral-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none"
+                  />
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsBookingModalOpen(false)}
+                    className="px-4 py-2 border border-neutral-200 text-neutral-600 rounded-xl text-xs font-semibold hover:bg-neutral-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={bookingSubmitting}
+                    className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5"
+                  >
+                    {bookingSubmitting ? 'Submitting...' : 'Confirm & Request Booking'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

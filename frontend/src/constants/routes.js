@@ -11,5 +11,8 @@ export const ROUTES = {
   CREATE_LISTING: '/landlord/create-listing',
   MY_LISTINGS: '/landlord/my-listings',
   INBOX: '/inbox',
+  MESSAGES: '/messages',
+  STUDENT_BOOKINGS: '/bookings',
+  LANDLORD_BOOKINGS: '/landlord/bookings',
   ADMIN_DASHBOARD: '/admin',
 }
