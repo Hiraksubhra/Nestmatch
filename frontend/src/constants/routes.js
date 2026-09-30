@@ -1,0 +1,15 @@
+export const ROUTES = {
+  HOME: '/',
+  SEARCH: '/search',
+  LISTING_DETAIL: '/listings/:id',
+  FLATMATES: '/flatmates',
+  LOGIN: '/login',
+  REGISTER: '/register',
+  FORGOT_PASSWORD: '/forgot-password',
+  STUDENT_DASHBOARD: '/dashboard/student',
+  LANDLORD_DASHBOARD: '/dashboard/landlord',
+  CREATE_LISTING: '/landlord/create-listing',
+  MY_LISTINGS: '/landlord/my-listings',
+  INBOX: '/inbox',
+  ADMIN_DASHBOARD: '/admin',
+}

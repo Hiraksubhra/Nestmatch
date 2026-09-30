@@ -1,7 +1,8 @@
 # NestMatch 🏠
+
 > *Find your space, find your people.*
 
-Student housing platform for India — verified listings, safe messaging, roommate matching.
+NestMatch is a student-first housing platform designed to solve student accommodation challenges through verified listings, secure platform interactions, and lifestyle-based flatmate matching.
 
 ---
 
@@ -17,62 +18,59 @@ Student housing platform for India — verified listings, safe messaging, roomma
 
 ---
 
+## Tech Stack
+
+- **Frontend**: React 18, Vite, Tailwind CSS, Lucide icons, Zustand, React Router v6, Axios
+- **Backend**: FastAPI (Python 3.12+), SQLAlchemy 2.0 (async), Pydantic v2, Alembic, python-jose, bcrypt
+- **Database & Cache**: PostgreSQL 16, Redis (SQLite in-memory for testing)
+- **Media & Communications**: Cloudinary (photo storage), SendGrid (email)
+
+---
+
 ## Quick Start — Local Dev
 
 ### Prerequisites
-Install these before starting:
-- [Node.js 20+](https://nodejs.org)
-- [Python 3.12](https://python.org)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — for Postgres + Redis
+- Node.js 20+
+- Python 3.12
+- Docker Desktop (for Postgres & Redis)
 
-### 1. Clone the repo
+### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_ORG/nestmatch.git
-cd nestmatch
+git clone https://github.com/Tanishk2006/Nestmatch.git
+cd Nestmatch
 ```
 
-### 2. Start the database and Redis
+### 2. Start Database and Redis
 ```bash
 docker compose up -d
 ```
-This starts Postgres on port 5432 and Redis on port 6379. Run once, leave it running.
+*(Alternatively: `docker-compose -f backend/docker-compose.yml up -d`)*
 
 ### 3. Set up the backend
 ```bash
 cd backend
-python -m venv .venv
+python -m venv venv
 
-# Mac/Linux:
-source .venv/bin/activate
 # Windows:
-.venv\Scripts\activate
+.\venv\Scripts\activate
+# macOS/Linux:
+# source venv/bin/activate
 
 pip install -r requirements.txt
-
-# Copy env file and fill in values
 cp .env.example .env
-
-# Run database migrations
 alembic upgrade head
-
-# Start the backend server
 uvicorn app.main:app --reload --port 8000
 ```
-Backend is now at: http://localhost:8000  
-API docs at: http://localhost:8000/docs
+Interactive API documentation: `http://localhost:8000/docs`
 
 ### 4. Set up the frontend
 ```bash
 cd frontend
 npm install
-
-# Copy env file
-cp .env.example .env.local
-
-# Start the frontend dev server
+cp .env.example .env
 npm run dev
 ```
-Frontend is now at: http://localhost:5173
+Frontend development server: `http://localhost:5173`
 
 ---
 
@@ -91,7 +89,7 @@ fix/tm1/ci-config
 chore/setup-docker
 ```
 
-**Commit messages (Conventional Commits):**
+**Commit format:**
 ```
 feat(listings): add photo upload with Cloudinary
 fix(auth): refresh token not clearing correctly
@@ -102,10 +100,10 @@ chore(ci): add pytest to GitHub Actions
 
 ## PR Rules
 - Every PR requires review from at least 1 other member
-- CI must pass before merging
-- No API keys in frontend code — use `VITE_` env vars
+- CI checks must pass before merging
+- No API keys in frontend code — use `VITE_` environment variables
 - No `console.log` in production code
-- New env vars must be added to `.env.example`
+- New environment variables must be documented in `.env.example`
 
 ---
 
@@ -114,18 +112,20 @@ chore(ci): add pytest to GitHub Actions
 ```
 nestmatch/
 ├── .github/
-│   ├── workflows/ci.yml          ← GitHub Actions CI
-│   └── PULL_REQUEST_TEMPLATE.md
-├── frontend/                     ← React + Vite (TM2, TM5)
+│   ├── workflows/ci.yml          ← GitHub Actions CI pipeline
+│   └── PULL_REQUEST_TEMPLATE.md  ← Pull request template
+├── frontend/                     ← React + Vite frontend
 │   ├── src/
 │   ├── .env.example
 │   └── vercel.json
-├── backend/                      ← FastAPI + Python (TM3, TM4)
+├── backend/                      ← FastAPI + Python backend
 │   ├── app/
 │   ├── alembic/
+│   ├── tests/
 │   ├── .env.example
 │   └── railway.json
-├── docker-compose.yml            ← Local Postgres + Redis
+├── docker-compose.yml            ← Local Postgres + Redis dev services
+├── TM1_SETUP_GUIDE.md            ← Deployment & cloud setup guide
 └── README.md
 ```
 
@@ -140,7 +140,3 @@ nestmatch/
 | Database | Neon.tech | (serverless Postgres) |
 | Images | Cloudinary | (free tier) |
 | Email | SendGrid | (free tier, 100/day) |
-
----
-
-*See `CLAUDE.md` for full product requirements, data models, API contracts, and sprint plan.*
