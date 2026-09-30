@@ -43,6 +43,13 @@ app.add_middleware(
 app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
+# Mount static files for local uploads fallback
+import os
+from fastapi.staticfiles import StaticFiles
+static_dir = os.path.join(os.getcwd(), "static")
+os.makedirs(static_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
 # Include API v1 Router
 app.include_router(api_v1_router, prefix="/api/v1")
 

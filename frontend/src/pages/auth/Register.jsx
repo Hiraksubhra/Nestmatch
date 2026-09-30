@@ -1,5 +1,4 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { GraduationCap, Building2 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { ROUTES } from '../../constants/routes'
@@ -9,7 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../..
 import { cn } from '../../lib/utils'
 
 export const Register = () => {
-  const [role, setRole] = useState('STUDENT')
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+
+  const initialRole =
+    location.state?.role ||
+    (searchParams.get('role')?.toUpperCase() === 'LANDLORD' ? 'LANDLORD' : 'STUDENT')
+
+  const [role, setRole] = useState(initialRole)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
