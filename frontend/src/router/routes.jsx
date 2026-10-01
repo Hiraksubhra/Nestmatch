@@ -12,6 +12,9 @@ import { SearchResults } from '../pages/listings/SearchResults'
 import { ListingDetail } from '../pages/listings/ListingDetail'
 import { CreateListing } from '../pages/landlord/CreateListing'
 import { MyListings } from '../pages/landlord/MyListings'
+import { Chat } from '../pages/messages/Chat'
+import { StudentBookings } from '../pages/bookings/StudentBookings'
+import { LandlordBookings } from '../pages/landlord/LandlordBookings'
 
 export const AppRoutes = () => {
   return (
@@ -23,12 +26,46 @@ export const AppRoutes = () => {
         <Route path={ROUTES.SEARCH} element={<SearchResults />} />
         <Route path={ROUTES.LISTING_DETAIL} element={<ListingDetail />} />
 
-        {/* Protected Student Dashboard */}
+        {/* Protected Messaging Routes */}
+        <Route
+          path={ROUTES.MESSAGES}
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={`${ROUTES.MESSAGES}/:conversationId`}
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.INBOX}
+          element={
+            <ProtectedRoute>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Student Routes */}
         <Route
           path={ROUTES.STUDENT_DASHBOARD}
           element={
             <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
               <StudentDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.STUDENT_BOOKINGS}
+          element={
+            <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
+              <StudentBookings />
             </ProtectedRoute>
           }
         />
@@ -55,6 +92,14 @@ export const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['LANDLORD', 'ADMIN']}>
               <MyListings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.LANDLORD_BOOKINGS}
+          element={
+            <ProtectedRoute allowedRoles={['LANDLORD', 'ADMIN']}>
+              <LandlordBookings />
             </ProtectedRoute>
           }
         />

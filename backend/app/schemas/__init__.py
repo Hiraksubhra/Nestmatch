@@ -17,6 +17,16 @@ from app.schemas.listing import (
     ListingResponse,
     PaginatedListingsResponse,
 )
+from app.schemas.message import (
+    MessageCreate,
+    MessageResponse,
+    ConversationCreate,
+    ConversationResponse,
+)
+from app.schemas.booking import (
+    BookingRequestCreate,
+    BookingRequestResponse,
+)
 
 __all__ = [
     "UserCreate",
@@ -34,4 +44,10 @@ __all__ = [
     "ListingRejectRequest",
     "ListingResponse",
     "PaginatedListingsResponse",
+    "MessageCreate",
+    "MessageResponse",
+    "ConversationCreate",
+    "ConversationResponse",
+    "BookingRequestCreate",
+    "BookingRequestResponse",
 ]
