@@ -158,17 +158,21 @@ export const MyFlatmateProfile = () => {
 
       <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-primary-700 to-primary-600 px-6 sm:px-8 py-6 text-white">
-          <div className="flex items-center gap-3 mb-1">
-            <Sparkles size={20} className="text-primary-200" />
-            <h1 className="text-xl sm:text-2xl font-heading font-bold text-white">
-              My Roommate & Flatmate Profile
-            </h1>
+        <div className="bg-gradient-to-r from-blue-700 via-primary to-indigo-800 px-6 sm:px-8 py-6 text-white relative overflow-hidden border-b border-blue-400/30">
+          <div className="absolute -right-8 -top-8 w-48 h-48 bg-sky-400/25 rounded-full blur-2xl pointer-events-none" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-1">
+              <Sparkles size={20} className="text-sky-300" />
+              <h1 className="text-xl sm:text-2xl font-heading font-bold text-white tracking-tight">
+                My Roommate & Flatmate Profile
+              </h1>
+            </div>
+            <p className="text-sky-100 text-xs sm:text-sm">
+              Set your budget, location preferences, and lifestyle habits so compatible students can discover and connect with you.
+            </p>
           </div>
-          <p className="text-primary-100 text-xs sm:text-sm">
-            Set your budget, location preferences, and lifestyle habits so compatible students can discover and connect with you.
-          </p>
         </div>
+
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">

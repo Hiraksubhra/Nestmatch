@@ -164,28 +164,32 @@ export const BrowseFlatmates = () => {
 
   return (
     <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Top Banner / Hero */}
-      <div className="bg-gradient-to-r from-primary-600 via-primary-500 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg mb-8 relative overflow-hidden">
+      {/* Top Banner / Hero with Light Blue Accents */}
+      <div className="bg-gradient-to-r from-blue-700 via-primary to-indigo-800 rounded-2xl p-6 sm:p-8 text-white shadow-xl mb-8 relative overflow-hidden border border-blue-400/30">
+        {/* Decorative light blue background glow blurs */}
+        <div className="absolute -right-8 -top-8 w-64 h-64 bg-sky-400/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-48 -bottom-10 w-52 h-52 bg-blue-300/20 rounded-full blur-2xl pointer-events-none" />
+
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold uppercase tracking-wider text-white mb-3">
-            <Sparkles size={14} /> Social Roommate Discovery
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/20 border border-sky-300/40 text-xs font-semibold uppercase tracking-wider text-sky-100 mb-3 backdrop-blur-md">
+            <Sparkles size={14} className="text-sky-300" /> Social Roommate Discovery
           </div>
-          <h1 className="text-2xl sm:text-3xl font-heading font-bold text-white mb-2">
+          <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-white mb-2 tracking-tight drop-shadow-xs">
             Find Compatible Roommates
           </h1>
-          <p className="text-primary-100 text-sm sm:text-base leading-relaxed mb-4">
+          <p className="text-sky-100 text-sm sm:text-base leading-relaxed mb-5">
             Match with fellow university students by lifestyle habits, campus proximity, budget, and move-in schedules.
           </p>
 
           {isAuthenticated && user?.role === 'STUDENT' ? (
             myProfile ? (
               <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs bg-white/20 backdrop-blur px-3 py-1.5 rounded-lg font-medium">
+                <span className="text-xs bg-white/20 backdrop-blur-md border border-white/20 text-white px-3 py-1.5 rounded-xl font-medium shadow-xs">
                   ✓ Your Profile Active ({myProfile.preferred_city || 'India'})
                 </span>
                 <Link
                   to={ROUTES.MY_FLATMATE_PROFILE}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white text-primary px-3 py-1.5 rounded-lg hover:bg-neutral-100 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-blue-700 hover:bg-sky-50 px-3.5 py-2 rounded-xl transition-all shadow-md hover:shadow-lg"
                 >
                   Edit My Profile <ArrowRight size={13} />
                 </Link>
@@ -193,7 +197,7 @@ export const BrowseFlatmates = () => {
             ) : (
               <Link
                 to={ROUTES.MY_FLATMATE_PROFILE}
-                className="inline-flex items-center gap-2 bg-white text-primary-700 hover:bg-primary-50 font-semibold px-4 py-2 rounded-xl text-sm transition-all shadow-md hover:shadow-lg"
+                className="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-sky-50 font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-md hover:shadow-lg"
               >
                 <UserCheck size={16} /> Create My Roommate Profile
               </Link>
@@ -201,7 +205,7 @@ export const BrowseFlatmates = () => {
           ) : !isAuthenticated ? (
             <Link
               to={ROUTES.REGISTER}
-              className="inline-flex items-center gap-2 bg-white text-primary-700 hover:bg-primary-50 font-semibold px-4 py-2 rounded-xl text-sm transition-all shadow-md"
+              className="inline-flex items-center gap-2 bg-white text-blue-700 hover:bg-sky-50 font-bold px-4 py-2.5 rounded-xl text-sm transition-all shadow-md hover:shadow-lg"
             >
               Sign up to Match & Connect
             </Link>
@@ -209,12 +213,14 @@ export const BrowseFlatmates = () => {
         </div>
       </div>
 
+
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Left Filter Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-sm sticky top-20">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-4">
+          <div className="bg-white rounded-2xl border-2 border-sky-100/90 p-5 shadow-sm sticky top-20 overflow-hidden relative">
+            <div className="h-1 w-full bg-gradient-to-r from-sky-400 to-primary absolute top-0 left-0" />
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-4 pt-1">
               <h2 className="font-heading font-semibold text-neutral-900 flex items-center gap-2 text-base">
                 <SlidersHorizontal size={16} className="text-primary" /> Filter Profiles
               </h2>
@@ -378,15 +384,18 @@ export const BrowseFlatmates = () => {
                   score >= 80
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : score >= 60
-                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                    ? 'bg-sky-50 text-blue-700 border-sky-200'
                     : 'bg-neutral-50 text-neutral-600 border-neutral-200'
 
                 return (
                   <div
                     key={p.id}
-                    className="bg-white rounded-xl border border-neutral-200 hover:border-primary/40 hover:shadow-md transition-all p-5 flex flex-col justify-between"
+                    className="bg-white rounded-2xl border-2 border-sky-100 hover:border-primary shadow-sm hover:shadow-xl transition-all duration-300 p-5 flex flex-col justify-between relative overflow-hidden group"
                   >
-                    <div>
+                    {/* Top Light Blue Accent Stripe */}
+                    <div className="h-1.5 w-full bg-gradient-to-r from-sky-400 via-primary to-indigo-500 absolute top-0 left-0" />
+
+                    <div className="pt-1">
                       {/* Header with Avatar & Compatibility Badge */}
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div className="flex items-center gap-3">
@@ -394,15 +403,15 @@ export const BrowseFlatmates = () => {
                             <img
                               src={p.user.avatar_url}
                               alt={userName}
-                              className="w-12 h-12 rounded-full object-cover border border-neutral-200"
+                              className="w-12 h-12 rounded-full object-cover border-2 border-sky-200 shadow-xs"
                             />
                           ) : (
-                            <div className="w-12 h-12 rounded-full bg-primary-100 text-primary-700 font-bold flex items-center justify-center text-sm">
+                            <div className="w-12 h-12 rounded-full bg-sky-100 text-blue-700 font-bold flex items-center justify-center text-sm border-2 border-sky-200 shadow-xs">
                               {initials}
                             </div>
                           )}
                           <div>
-                            <h3 className="font-heading font-semibold text-neutral-900 text-base">
+                            <h3 className="font-heading font-semibold text-neutral-900 text-base group-hover:text-primary transition-colors">
                               {userName}
                             </h3>
                             <div className="flex items-center gap-2 text-xs text-neutral-500">
@@ -410,8 +419,8 @@ export const BrowseFlatmates = () => {
                               {p.preferred_city && (
                                 <>
                                   <span>•</span>
-                                  <span className="flex items-center gap-0.5">
-                                    <MapPin size={11} /> {p.preferred_city}
+                                  <span className="flex items-center gap-0.5 text-neutral-600 font-medium">
+                                    <MapPin size={11} className="text-primary" /> {p.preferred_city}
                                   </span>
                                 </>
                               )}
@@ -421,35 +430,37 @@ export const BrowseFlatmates = () => {
 
                         {/* Compatibility Score */}
                         <div
-                          className={`px-2.5 py-1 rounded-full border text-xs font-semibold flex items-center gap-1 ${scoreColor}`}
+                          className={`px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs ${scoreColor}`}
                           title="Estimated lifestyle & budget compatibility"
                         >
-                          <Sparkles size={12} /> {score}% Match
+                          <Sparkles size={13} /> {score}% Match
                         </div>
                       </div>
 
                       {/* University & Locality */}
                       {p.preferred_university && (
                         <p className="text-xs text-neutral-600 flex items-center gap-1.5 mb-2 font-medium">
-                          <GraduationCap size={13} className="text-neutral-400" />
-                          {p.preferred_university}
-                          {p.preferred_locality && ` (${p.preferred_locality})`}
+                          <GraduationCap size={14} className="text-primary shrink-0" />
+                          <span>{p.preferred_university}</span>
+                          {p.preferred_locality && (
+                            <span className="text-neutral-400 font-normal">({p.preferred_locality})</span>
+                          )}
                         </p>
                       )}
 
-                      {/* Budget & Move In */}
-                      <div className="grid grid-cols-2 gap-2 my-3 p-2.5 rounded-lg bg-neutral-50 border border-neutral-100 text-xs">
+                      {/* Budget & Move In (Light Blue Tinted Box) */}
+                      <div className="grid grid-cols-2 gap-2 my-3.5 p-3 rounded-xl bg-gradient-to-r from-sky-50/80 via-blue-50/40 to-indigo-50/30 border border-sky-100 text-xs">
                         <div>
-                          <span className="text-neutral-400 block font-normal">Monthly Budget</span>
-                          <span className="font-semibold text-neutral-800">
+                          <span className="text-neutral-500 block font-normal text-[11px]">Monthly Budget</span>
+                          <span className="font-bold text-neutral-900 text-sm">
                             {p.budget_min ? `₹${Number(p.budget_min).toLocaleString()} - ` : 'Up to '}
                             ₹{Number(p.budget_max).toLocaleString()}
                           </span>
                         </div>
                         <div>
-                          <span className="text-neutral-400 block font-normal">Move-in Date</span>
-                          <span className="font-semibold text-neutral-800 flex items-center gap-1">
-                            <Calendar size={12} className="text-neutral-400" />
+                          <span className="text-neutral-500 block font-normal text-[11px]">Move-in Date</span>
+                          <span className="font-semibold text-neutral-800 flex items-center gap-1 text-xs">
+                            <Calendar size={13} className="text-primary" />
                             {p.move_in_date ? p.move_in_date : 'Flexible'}
                           </span>
                         </div>
@@ -457,18 +468,18 @@ export const BrowseFlatmates = () => {
 
                       {/* Bio */}
                       {p.bio && (
-                        <p className="text-xs text-neutral-600 line-clamp-2 italic mb-3">
+                        <p className="text-xs text-neutral-600 line-clamp-2 italic mb-3 bg-neutral-50/60 p-2 rounded-lg border border-neutral-100">
                           "{p.bio}"
                         </p>
                       )}
 
                       {/* Lifestyle Tag Pills */}
                       {p.lifestyle_tags && p.lifestyle_tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-4">
+                        <div className="flex flex-wrap gap-1.5 mb-4">
                           {p.lifestyle_tags.map((t) => (
                             <span
                               key={t}
-                              className="text-[11px] px-2 py-0.5 bg-neutral-100 text-neutral-700 rounded-md font-medium"
+                              className="text-[11px] px-2.5 py-1 bg-sky-50/80 text-blue-900 border border-sky-200/60 rounded-lg font-medium shadow-2xs"
                             >
                               {formatTag(t)}
                             </span>
@@ -478,14 +489,14 @@ export const BrowseFlatmates = () => {
                     </div>
 
                     {/* Connect CTA */}
-                    <div className="pt-3 border-t border-neutral-100 mt-2">
+                    <div className="pt-3 border-t border-sky-100 mt-2">
                       <Button
                         variant="primary"
                         size="sm"
-                        className="w-full flex items-center justify-center gap-1.5"
+                        className="w-full flex items-center justify-center gap-1.5 font-semibold shadow-xs hover:shadow-md transition-all"
                         onClick={() => handleOpenConnect(p)}
                       >
-                        <MessageCircle size={14} /> Connect with {userName.split(' ')[0]}
+                        <MessageCircle size={15} /> Connect with {userName.split(' ')[0]}
                       </Button>
                     </div>
                   </div>
