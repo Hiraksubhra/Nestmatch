@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Menu, X, User as UserIcon, LogOut, Home, Search, Users, PlusCircle, MessageSquare, Calendar } from 'lucide-react'
+import { Menu, X, User as UserIcon, LogOut, Home, Search, Users, PlusCircle, MessageSquare, Calendar, Heart } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+
 import { ROUTES } from '../../constants/routes'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
