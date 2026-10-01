@@ -1,3 +1,4 @@
+import React, { useState } from 'react'
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { GraduationCap, Building2 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
