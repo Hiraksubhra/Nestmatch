@@ -85,20 +85,31 @@ export const Navbar = () => {
           ) : (
             <>
               {isAuthenticated && (
-                <Link
-                  to={ROUTES.STUDENT_BOOKINGS}
-                  className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
-                >
-                  <Calendar size={15} />
-                  My Bookings
-                </Link>
+                <>
+                  <Link
+                    to={ROUTES.STUDENT_BOOKINGS}
+                    className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
+                  >
+                    <Calendar size={15} />
+                    My Bookings
+                  </Link>
+                  <Link
+                    to={ROUTES.SAVED_LISTINGS}
+                    className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
+                  >
+                    <Heart size={15} />
+                    Saved
+                  </Link>
+                </>
               )}
               <Link
                 to={ROUTES.FLATMATES}
-                className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium"
+                className="text-neutral-600 hover:text-primary transition-colors text-sm font-medium flex items-center gap-1.5"
               >
-                Roommates
+                <Users size={15} />
+                Find Flatmates
               </Link>
+
               {!isAuthenticated && (
                 <Link
                   to="/login?role=landlord"
@@ -218,14 +229,32 @@ export const Navbar = () => {
           ) : (
             <>
               {isAuthenticated && (
-                <Link
-                  to={ROUTES.STUDENT_BOOKINGS}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
-                >
-                  <Calendar className="w-4 h-4 text-primary" />
-                  My Bookings
-                </Link>
+                <>
+                  <Link
+                    to={ROUTES.STUDENT_BOOKINGS}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+                  >
+                    <Calendar className="w-4 h-4 text-primary" />
+                    My Bookings
+                  </Link>
+                  <Link
+                    to={ROUTES.SAVED_LISTINGS}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+                  >
+                    <Heart className="w-4 h-4 text-red-500" />
+                    Saved Listings
+                  </Link>
+                  <Link
+                    to={ROUTES.MY_FLATMATE_PROFILE}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
+                  >
+                    <Users className="w-4 h-4 text-primary" />
+                    My Flatmate Profile
+                  </Link>
+                </>
               )}
               <Link
                 to={ROUTES.FLATMATES}
@@ -233,8 +262,9 @@ export const Navbar = () => {
                 className="flex items-center gap-2 py-2 text-neutral-800 font-medium"
               >
                 <Users className="w-4 h-4 text-neutral-400" />
-                Roommates
+                Find Flatmates
               </Link>
+
               {!isAuthenticated && (
                 <Link
                   to="/login?role=landlord"

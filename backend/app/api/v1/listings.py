@@ -3,7 +3,7 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, Query, UploadFile, File, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
-from app.core.dependencies import get_current_user, require_role
+from app.core.dependencies import get_current_user, get_optional_current_user, require_role
 from app.models.user import User, UserRole
 from app.models.listing import ListingStatus
 from app.schemas.listing import (
@@ -14,9 +14,21 @@ from app.schemas.listing import (
     ListingPhotoResponse,
     PaginatedListingsResponse,
 )
+from app.schemas.review import (
+    ReviewCreate,
+    ReviewResponse,
+    ListingReviewsSummaryResponse,
+)
+from app.schemas.saved_listing import (
+    SavedListingToggleResponse,
+    PaginatedSavedListingsResponse,
+)
 from app.services.listing_service import ListingService
 from app.services.photo_service import PhotoService
+from app.services.review_service import ReviewService
+from app.services.saved_listing_service import SavedListingService
 from app.core.exceptions import ForbiddenException
+
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
 
@@ -146,19 +158,119 @@ async def get_my_listings(
 
 
 @router.get(
+    "/saved",
+    status_code=status.HTTP_200_OK,
+    summary="Get current user's saved listings"
+)
+async def get_my_saved_listings(
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    saved_res = await SavedListingService.get_saved_listings(
+        db=session,
+        user_id=current_user.id,
+        page=page,
+        limit=limit,
+    )
+    return {
+        "success": True,
+        "data": [item.model_dump() for item in saved_res.items],
+        "meta": {
+            "total": saved_res.total,
+            "page": saved_res.page,
+            "limit": saved_res.limit,
+            "pages": saved_res.pages,
+        }
+    }
+
+
+@router.get(
     "/{listing_id}",
     status_code=status.HTTP_200_OK,
     summary="Get listing detail by ID"
 )
 async def get_listing_detail(
     listing_id: str,
+    current_user: Optional[User] = Depends(get_optional_current_user),
     session: AsyncSession = Depends(get_db)
 ):
     listing = await ListingService.get_by_id(session, listing_id, increment_view=True)
+    listing_data = ListingResponse.model_validate(listing)
+
+    # Attach is_saved if user is authenticated
+    if current_user:
+        listing_data.is_saved = await SavedListingService.is_listing_saved(session, current_user.id, listing_id)
+
+    # Attach reviews summary
+    reviews_summary = await ReviewService.get_listing_reviews(session, listing_id)
+    listing_data.average_rating = reviews_summary.average_rating
+    listing_data.total_reviews = reviews_summary.total_reviews
+
     return {
         "success": True,
-        "data": ListingResponse.model_validate(listing).model_dump()
+        "data": listing_data.model_dump()
     }
+
+
+@router.post(
+    "/{listing_id}/save",
+    status_code=status.HTTP_200_OK,
+    summary="Toggle save/unsave listing"
+)
+async def toggle_save_listing(
+    listing_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    result = await SavedListingService.toggle_save_listing(session, current_user.id, listing_id)
+    return {
+        "success": True,
+        "data": result.model_dump(),
+        "message": result.message,
+    }
+
+
+@router.get(
+    "/{listing_id}/reviews",
+    status_code=status.HTTP_200_OK,
+    summary="Get reviews and rating summary for a listing"
+)
+async def get_listing_reviews(
+    listing_id: str,
+    session: AsyncSession = Depends(get_db),
+):
+    summary = await ReviewService.get_listing_reviews(session, listing_id)
+    return {
+        "success": True,
+        "data": summary.model_dump(),
+    }
+
+
+@router.post(
+    "/{listing_id}/reviews",
+    status_code=status.HTTP_201_CREATED,
+    summary="Submit a review for a listing"
+)
+async def submit_listing_review(
+    listing_id: str,
+    data: ReviewCreate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+):
+    review = await ReviewService.create_review(
+        db=session,
+        reviewer_id=current_user.id,
+        listing_id=listing_id,
+        data=data,
+    )
+    return {
+        "success": True,
+        "message": "Review submitted successfully",
+        "data": ReviewResponse.model_validate(review).model_dump(),
+    }
+
 
 
 @router.put(

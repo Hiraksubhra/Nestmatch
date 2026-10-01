@@ -42,6 +42,27 @@ async def get_current_user(
     return user
 
 
+async def get_optional_current_user(
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_db)
+) -> Optional[User]:
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        if payload.get("type") != "access":
+            return None
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        user = await AuthService.get_by_id(session, user_id=user_id)
+        if not user or not user.is_active:
+            return None
+        return user
+    except Exception:
+        return None
+
+
 def require_role(*roles: str) -> Callable:
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
         if current_user.role not in roles:
@@ -51,3 +72,4 @@ def require_role(*roles: str) -> Callable:
             )
         return current_user
     return role_checker
+

@@ -3,6 +3,8 @@ export const ROUTES = {
   SEARCH: '/search',
   LISTING_DETAIL: '/listings/:id',
   FLATMATES: '/flatmates',
+  MY_FLATMATE_PROFILE: '/flatmates/profile',
+  SAVED_LISTINGS: '/saved-listings',
   LOGIN: '/login',
   REGISTER: '/register',
   FORGOT_PASSWORD: '/forgot-password',
@@ -15,4 +17,5 @@ export const ROUTES = {
   STUDENT_BOOKINGS: '/bookings',
   LANDLORD_BOOKINGS: '/landlord/bookings',
   ADMIN_DASHBOARD: '/admin',
+
 }

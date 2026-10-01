@@ -21,6 +21,9 @@ from app.models.booking import (
     BookingRequest,
     BookingStatus,
 )
+from app.models.flatmate import FlatmateProfile
+from app.models.review import Review
+from app.models.saved_listing import SavedListing
 
 __all__ = [
     "Base",
@@ -41,4 +44,8 @@ __all__ = [
     "ConversationStatus",
     "BookingRequest",
     "BookingStatus",
+    "FlatmateProfile",
+    "Review",
+    "SavedListing",
 ]
+

@@ -126,6 +126,10 @@ class ListingResponse(BaseModel):
     landlord: Optional[UserResponse] = None
     photos: List[ListingPhotoResponse] = []
     amenities: List[AmenityResponse] = []
+    is_saved: Optional[bool] = False
+    average_rating: Optional[float] = None
+    total_reviews: Optional[int] = None
+
 
 
 class PaginatedListingsResponse(BaseModel):

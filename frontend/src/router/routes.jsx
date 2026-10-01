@@ -15,6 +15,9 @@ import { MyListings } from '../pages/landlord/MyListings'
 import { Chat } from '../pages/messages/Chat'
 import { StudentBookings } from '../pages/bookings/StudentBookings'
 import { LandlordBookings } from '../pages/landlord/LandlordBookings'
+import { BrowseFlatmates } from '../pages/flatmates/BrowseFlatmates'
+import { MyFlatmateProfile } from '../pages/flatmates/MyFlatmateProfile'
+import { SavedListings } from '../pages/saved/SavedListings'
 
 export const AppRoutes = () => {
   return (
@@ -25,6 +28,8 @@ export const AppRoutes = () => {
         <Route path={ROUTES.REGISTER} element={<Register />} />
         <Route path={ROUTES.SEARCH} element={<SearchResults />} />
         <Route path={ROUTES.LISTING_DETAIL} element={<ListingDetail />} />
+        <Route path={ROUTES.FLATMATES} element={<BrowseFlatmates />} />
+
 
         {/* Protected Messaging Routes */}
         <Route
@@ -69,6 +74,23 @@ export const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path={ROUTES.SAVED_LISTINGS}
+          element={
+            <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
+              <SavedListings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path={ROUTES.MY_FLATMATE_PROFILE}
+          element={
+            <ProtectedRoute allowedRoles={['STUDENT', 'ADMIN']}>
+              <MyFlatmateProfile />
+            </ProtectedRoute>
+          }
+        />
+
 
         {/* Protected Landlord Routes */}
         <Route

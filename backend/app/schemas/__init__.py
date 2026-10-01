@@ -27,6 +27,23 @@ from app.schemas.booking import (
     BookingRequestCreate,
     BookingRequestResponse,
 )
+from app.schemas.flatmate import (
+    FlatmateProfileBase,
+    FlatmateProfileCreate,
+    FlatmateProfileUpdate,
+    FlatmateProfileResponse,
+    PaginatedFlatmateProfilesResponse,
+)
+from app.schemas.review import (
+    ReviewCreate,
+    ReviewResponse,
+    ListingReviewsSummaryResponse,
+)
+from app.schemas.saved_listing import (
+    SavedListingToggleResponse,
+    SavedListingItemResponse,
+    PaginatedSavedListingsResponse,
+)
 
 __all__ = [
     "UserCreate",
@@ -50,4 +67,16 @@ __all__ = [
     "ConversationResponse",
     "BookingRequestCreate",
     "BookingRequestResponse",
+    "FlatmateProfileBase",
+    "FlatmateProfileCreate",
+    "FlatmateProfileUpdate",
+    "FlatmateProfileResponse",
+    "PaginatedFlatmateProfilesResponse",
+    "ReviewCreate",
+    "ReviewResponse",
+    "ListingReviewsSummaryResponse",
+    "SavedListingToggleResponse",
+    "SavedListingItemResponse",
+    "PaginatedSavedListingsResponse",
 ]
+
