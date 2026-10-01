@@ -335,7 +335,8 @@ export const BrowseFlatmates = () => {
         <div className="lg:col-span-3">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-heading font-semibold text-neutral-900">
-              Compatible Roommates {profiles.length > 0 && `(${profiles.length})`}
+              {isAuthenticated && myProfile ? 'Compatible Roommates' : 'Browse Roommates'}{' '}
+              {profiles.length > 0 && `(${profiles.length})`}
             </h2>
             {selectedTags.length > 0 && (
               <span className="text-xs text-primary font-medium">
@@ -347,7 +348,11 @@ export const BrowseFlatmates = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-neutral-200">
               <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
-              <p className="text-neutral-500 text-sm">Matching compatible students...</p>
+              <p className="text-neutral-500 text-sm">
+                {isAuthenticated && myProfile
+                  ? 'Matching compatible students...'
+                  : 'Loading roommate profiles...'}
+              </p>
             </div>
           ) : error ? (
             <div className="p-6 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center">
@@ -379,13 +384,15 @@ export const BrowseFlatmates = () => {
                   .toUpperCase()
                   .slice(0, 2)
 
-                const score = p.compatibility_score || 75
+                const score = p.compatibility_score
                 const scoreColor =
-                  score >= 80
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : score >= 60
-                    ? 'bg-sky-50 text-blue-700 border-sky-200'
-                    : 'bg-neutral-50 text-neutral-600 border-neutral-200'
+                  score != null
+                    ? score >= 80
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : score >= 60
+                      ? 'bg-sky-50 text-blue-700 border-sky-200'
+                      : 'bg-neutral-50 text-neutral-600 border-neutral-200'
+                    : ''
 
                 return (
                   <div
@@ -428,14 +435,33 @@ export const BrowseFlatmates = () => {
                           </div>
                         </div>
 
-                        {/* Compatibility Score */}
-                        <div
-                          className={`px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs ${scoreColor}`}
-                          title="Estimated lifestyle & budget compatibility"
-                        >
-                          <Sparkles size={13} /> {score}% Match
-                        </div>
+                        {/* Compatibility Score - Only shown when signed in and verified with an active profile */}
+                        {score != null ? (
+                          <div
+                            className={`px-3 py-1 rounded-full border text-xs font-bold flex items-center gap-1.5 shadow-2xs ${scoreColor}`}
+                            title="Estimated lifestyle & budget compatibility with your profile"
+                          >
+                            <Sparkles size={13} /> {score}% Match
+                          </div>
+                        ) : !isAuthenticated ? (
+                          <Link
+                            to={ROUTES.LOGIN}
+                            className="px-2.5 py-1 rounded-full border border-sky-200 bg-sky-50 text-blue-700 text-[11px] font-semibold hover:bg-sky-100 transition-colors"
+                            title="Sign in to calculate match score with your profile"
+                          >
+                            Sign in to Match
+                          </Link>
+                        ) : !myProfile ? (
+                          <Link
+                            to={ROUTES.MY_FLATMATE_PROFILE}
+                            className="px-2.5 py-1 rounded-full border border-amber-200 bg-amber-50 text-amber-800 text-[11px] font-semibold hover:bg-amber-100 transition-colors"
+                            title="Create your flatmate profile to see compatibility score"
+                          >
+                            Set profile to match
+                          </Link>
+                        ) : null}
                       </div>
+
 
                       {/* University & Locality */}
                       {p.preferred_university && (

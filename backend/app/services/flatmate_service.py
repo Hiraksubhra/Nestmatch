@@ -19,17 +19,19 @@ from app.schemas.flatmate import (
 def calculate_compatibility_score(
     profile_a: Optional[FlatmateProfile],
     profile_b: FlatmateProfile,
-) -> int:
+) -> Optional[int]:
     """
     Calculate compatibility score (0-100%) between two flatmate profiles.
     - Lifestyle tags overlap: up to 40 points
     - Budget compatibility: up to 30 points
     - City / University alignment: up to 20 points
     - Move-in timeline alignment: up to 10 points
+
+    Returns None if profile_a is None (i.e. viewer is not logged in or has no flatmate profile).
     """
     if not profile_a:
-        # Generic compatibility baseline when user has not yet created a profile
-        return 75
+        return None
+
 
     score = 0.0
 
