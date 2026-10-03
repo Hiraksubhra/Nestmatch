@@ -93,19 +93,21 @@ class MessagingService:
             if conv:
                 if initial_message:
                     await MessagingService.send_message(session, conv.id, student_id, initial_message)
-                return conv
+                return await MessagingService.get_conversation_by_id(session, conv.id, student_id)
         else:
             if not landlord_id:
                 raise BadRequestException("Either listing_id or landlord_id must be provided", "INVALID_ARGUMENTS")
             if student_id == landlord_id:
                 raise BadRequestException("You cannot start a conversation with yourself", "SELF_CONVERSATION")
 
-            # Check if conversation exists without listing
+            # Check if conversation exists without listing in either direction
             query = select(Conversation).where(
                 and_(
                     Conversation.listing_id.is_(None),
-                    Conversation.student_id == student_id,
-                    Conversation.landlord_id == landlord_id
+                    or_(
+                        and_(Conversation.student_id == student_id, Conversation.landlord_id == landlord_id),
+                        and_(Conversation.student_id == landlord_id, Conversation.landlord_id == student_id),
+                    )
                 )
             ).options(
                 selectinload(Conversation.student),
@@ -117,7 +119,7 @@ class MessagingService:
             if conv:
                 if initial_message:
                     await MessagingService.send_message(session, conv.id, student_id, initial_message)
-                return conv
+                return await MessagingService.get_conversation_by_id(session, conv.id, student_id)
 
         # Create new conversation
         new_conv = Conversation(

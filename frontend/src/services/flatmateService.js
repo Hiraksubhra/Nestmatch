@@ -9,6 +9,9 @@ export const flatmateService = {
     if (params.min_budget) searchParams.append('min_budget', params.min_budget)
     if (params.max_budget) searchParams.append('max_budget', params.max_budget)
     if (params.gender && params.gender !== 'ANY') searchParams.append('gender', params.gender)
+    if (params.min_match !== undefined && params.min_match !== null && params.min_match !== '') {
+      searchParams.append('min_match', params.min_match)
+    }
     if (params.tags && params.tags.length > 0) searchParams.append('tags', params.tags.join(','))
     if (params.page) searchParams.append('page', params.page)
     if (params.limit) searchParams.append('limit', params.limit)

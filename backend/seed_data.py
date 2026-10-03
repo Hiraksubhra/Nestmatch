@@ -2,7 +2,7 @@
 import asyncio
 import sys
 import uuid
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone, date, timedelta
 from decimal import Decimal
 from sqlalchemy import select
 
@@ -14,6 +14,7 @@ from app.db.base import Base
 from app.db.init_db import init_db
 from app.core.security import hash_password
 from app.models.user import User, UserRole
+from app.models.flatmate import FlatmateProfile
 from app.models.listing import (
     Listing,
     ListingPhoto,
@@ -112,6 +113,20 @@ async def seed():
                 "role": UserRole.STUDENT.value,
                 "phone": "+91 99887 76655",
             },
+            {
+                "email": "aanya_s3@test.com",
+                "password": "Student123!",
+                "full_name": "Aanya Sharma",
+                "role": UserRole.STUDENT.value,
+                "phone": "+91 98230 44556",
+            },
+            {
+                "email": "priya_s3@test.com",
+                "password": "Student123!",
+                "full_name": "Priya Patel",
+                "role": UserRole.STUDENT.value,
+                "phone": "+91 98231 66778",
+            },
             # Admin
             {
                 "email": "admin@nestmatch.in",
@@ -143,6 +158,100 @@ async def seed():
             else:
                 created_users[u["email"]] = existing
                 print(f"User exists: {u['email']}")
+
+        # 1.5 Seed Student Flatmate Profiles
+        today = date.today()
+        next_month = today + timedelta(days=30)
+        flatmates_seed = [
+            {
+                "email": "aanya_s3@test.com",
+                "budget_min": Decimal("7000.00"),
+                "budget_max": Decimal("13000.00"),
+                "city": "Pune",
+                "uni": "Pune University",
+                "locality": "Kothrud",
+                "move_in": next_month,
+                "flex": 7,
+                "gender": "FEMALE",
+                "bio": "First year CS undergrad at Pune University looking for a clean, vegetarian flatmate. Early sleeper and studious.",
+                "tags": ["early_riser", "vegetarian", "non_smoker", "studious", "quiet"]
+            },
+            {
+                "email": "priya_s3@test.com",
+                "budget_min": Decimal("8000.00"),
+                "budget_max": Decimal("14000.00"),
+                "city": "Pune",
+                "uni": "Pune University",
+                "locality": "Viman Nagar",
+                "move_in": next_month,
+                "flex": 10,
+                "gender": "FEMALE",
+                "bio": "Engineering student looking for a friendly roommate to share an apartment near Viman Nagar. Loves good food and weekend study sessions.",
+                "tags": ["early_riser", "vegetarian", "studious", "social"]
+            },
+            {
+                "email": "priya.student@nestmatch.in",
+                "budget_min": Decimal("10000.00"),
+                "budget_max": Decimal("18000.00"),
+                "city": "Pune",
+                "uni": "Symbiosis International University",
+                "locality": "Senapati Bapat Road",
+                "move_in": next_month + timedelta(days=15),
+                "flex": 14,
+                "gender": "FEMALE",
+                "bio": "Master's student at Symbiosis looking for a neat and peaceful flat. Morning jogger, non-smoker, and pet-friendly.",
+                "tags": ["early_riser", "non_smoker", "fitness", "pet_friendly", "clean_freak"]
+            },
+            {
+                "email": "student@nestmatch.in",
+                "budget_min": Decimal("8000.00"),
+                "budget_max": Decimal("15000.00"),
+                "city": "Pune",
+                "uni": "COEP Tech",
+                "locality": "Shivajinagar",
+                "move_in": next_month,
+                "flex": 7,
+                "gender": "MALE",
+                "bio": "COEP engineering undergrad looking for flatmates for a 2BHK/3BHK in Shivajinagar. Love fitness and listening to indie music.",
+                "tags": ["night_owl", "music_lover", "fitness", "non_smoker"]
+            },
+            {
+                "email": "kabir.student@nestmatch.in",
+                "budget_min": Decimal("9000.00"),
+                "budget_max": Decimal("16000.00"),
+                "city": "Pune",
+                "uni": "MIT World Peace University",
+                "locality": "Kothrud",
+                "move_in": today + timedelta(days=60),
+                "flex": 14,
+                "gender": "MALE",
+                "bio": "Design & tech student at MIT-WPU. Chill, clean, vegetarian, mostly work on projects in the evening.",
+                "tags": ["night_owl", "vegetarian", "studious", "music_lover"]
+            },
+        ]
+
+        for fp_data in flatmates_seed:
+            user_obj = created_users.get(fp_data["email"])
+            if not user_obj:
+                continue
+            existing_fp = (await session.execute(select(FlatmateProfile).where(FlatmateProfile.user_id == user_obj.id))).scalars().first()
+            if not existing_fp:
+                fp = FlatmateProfile(
+                    user_id=user_obj.id,
+                    budget_min=fp_data["budget_min"],
+                    budget_max=fp_data["budget_max"],
+                    preferred_city=fp_data["city"],
+                    preferred_university=fp_data["uni"],
+                    preferred_locality=fp_data["locality"],
+                    move_in_date=fp_data["move_in"],
+                    move_in_flexibility=fp_data["flex"],
+                    gender=fp_data["gender"],
+                    bio=fp_data["bio"],
+                    lifestyle_tags=fp_data["tags"],
+                    is_active=True,
+                )
+                session.add(fp)
+                print(f"Created Flatmate Profile for {user_obj.full_name}")
 
         rajesh = created_users["landlord@nestmatch.in"]
         sunita = created_users["sunita.landlord@nestmatch.in"]

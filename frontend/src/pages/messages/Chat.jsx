@@ -11,11 +11,13 @@ import {
   Clock,
   ArrowLeft,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Flag,
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { messagingService } from '../../services/messagingService'
 import { formatCurrency } from '../../lib/utils'
+import { ReportUserModal } from '../../components/reports/ReportUserModal'
 
 export const Chat = () => {
   const { conversationId } = useParams()
@@ -30,6 +32,7 @@ export const Chat = () => {
   const [messagesLoading, setMessagesLoading] = useState(false)
   const [sending, setSending] = useState(false)
   const [wsConnected, setWsConnected] = useState(false)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
   const messagesEndRef = useRef(null)
   const wsRef = useRef(null)
@@ -332,24 +335,39 @@ export const Chat = () => {
                   </div>
                 </div>
 
-                {/* Quick Action: Booking Status */}
-                {user?.role === 'STUDENT' ? (
-                  <Link
-                    to="/bookings"
-                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl transition"
-                  >
-                    <Calendar size={13} />
-                    My Bookings
-                  </Link>
-                ) : (
-                  <Link
-                    to="/landlord/bookings"
-                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl transition"
-                  >
-                    <Calendar size={13} />
-                    Manage Requests
-                  </Link>
-                )}
+                <div className="flex items-center gap-2">
+                  {/* Quick Action: Booking Status */}
+                  {user?.role === 'STUDENT' ? (
+                    <Link
+                      to="/bookings"
+                      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl transition"
+                    >
+                      <Calendar size={13} />
+                      My Bookings
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/landlord/bookings"
+                      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl transition"
+                    >
+                      <Calendar size={13} />
+                      Manage Requests
+                    </Link>
+                  )}
+
+                  {/* Report User Action */}
+                  {counterpart && (!user || user.id !== counterpart.id) && (
+                    <button
+                      type="button"
+                      onClick={() => setIsReportModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition border border-neutral-200 hover:border-red-200"
+                      title={`Report ${counterpart.full_name} for inappropriate behaviour`}
+                    >
+                      <Flag size={13} />
+                      <span className="hidden sm:inline">Report</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Messages Body */}
@@ -453,6 +471,17 @@ export const Chat = () => {
           )}
         </div>
       </div>
+
+      {/* Report User Modal */}
+      {counterpart && (
+        <ReportUserModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          reportedUser={counterpart}
+          contextType={counterpart.role === 'LANDLORD' ? 'landlord' : 'student'}
+          listingTitle={activeConv?.listing?.title}
+        />
+      )}
     </div>
   )
 }

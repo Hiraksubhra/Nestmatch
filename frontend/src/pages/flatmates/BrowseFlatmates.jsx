@@ -14,6 +14,7 @@ import {
   RotateCcw,
   UserCheck,
   ArrowRight,
+  Flag,
 } from 'lucide-react'
 import { flatmateService } from '../../services/flatmateService'
 import { messagingService } from '../../services/messagingService'
@@ -22,6 +23,7 @@ import { ROUTES } from '../../constants/routes'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
+import { ReportUserModal } from '../../components/reports/ReportUserModal'
 
 const POPULAR_TAGS = [
   'early_riser',
@@ -57,6 +59,7 @@ export const BrowseFlatmates = () => {
   const [university, setUniversity] = useState('')
   const [maxBudget, setMaxBudget] = useState('')
   const [gender, setGender] = useState('ANY')
+  const [minMatch, setMinMatch] = useState('')
   const [selectedTags, setSelectedTags] = useState([])
 
   // Connect Modal
@@ -64,6 +67,9 @@ export const BrowseFlatmates = () => {
   const [connectMessage, setConnectMessage] = useState('')
   const [connecting, setConnecting] = useState(false)
   const [connectSuccess, setConnectSuccess] = useState(false)
+
+  // Report Modal
+  const [reportTarget, setReportTarget] = useState(null)
 
   // Fetch current user's profile to know if they have one
   useEffect(() => {
@@ -89,6 +95,7 @@ export const BrowseFlatmates = () => {
         university: university || undefined,
         max_budget: maxBudget ? Number(maxBudget) : undefined,
         gender: gender !== 'ANY' ? gender : undefined,
+        min_match: minMatch ? Number(minMatch) : undefined,
         tags: selectedTags,
       })
       setProfiles(res.data || [])
@@ -101,7 +108,7 @@ export const BrowseFlatmates = () => {
 
   useEffect(() => {
     loadProfiles()
-  }, [gender])
+  }, [gender, minMatch])
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
@@ -121,6 +128,7 @@ export const BrowseFlatmates = () => {
     setUniversity('')
     setMaxBudget('')
     setGender('ANY')
+    setMinMatch('')
     setSelectedTags([])
     flatmateService.browseFlatmates().then((res) => setProfiles(res.data || []))
   }
@@ -137,6 +145,15 @@ export const BrowseFlatmates = () => {
     setConnectSuccess(false)
   }
 
+  const handleOpenReport = (profile) => {
+    const target = profile.user || {
+      id: profile.user_id,
+      full_name: 'Student',
+      role: 'STUDENT',
+    }
+    setReportTarget(target)
+  }
+
   const handleSendConnect = async () => {
     if (!connectTarget) return
     setConnecting(true)
@@ -145,7 +162,7 @@ export const BrowseFlatmates = () => {
         landlord_id: connectTarget.user_id,
         initial_message: connectMessage,
       })
-      const convId = res.data?.id
+      const convId = res?.id || res?.data?.id
       setConnectSuccess(true)
       setTimeout(() => {
         setConnectTarget(null)
@@ -298,6 +315,27 @@ export const BrowseFlatmates = () => {
                 </select>
               </div>
 
+              {/* Match Relevance / Minimum Compatibility */}
+              <div>
+                <label className="block text-xs font-semibold text-neutral-700 mb-1 flex items-center justify-between">
+                  <span>Match Percentage</span>
+                  {minMatch && (
+                    <span className="text-[10px] text-primary font-bold">{minMatch}%+</span>
+                  )}
+                </label>
+                <select
+                  value={minMatch}
+                  onChange={(e) => setMinMatch(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                >
+                  <option value="">Any Match % (All Students)</option>
+                  <option value="50">50%+ Match (Moderate)</option>
+                  <option value="70">70%+ Match (High Compatibility)</option>
+                  <option value="80">80%+ Match (Top Compatibility)</option>
+                  <option value="90">90%+ Match (Best Matches Only)</option>
+                </select>
+              </div>
+
               {/* Lifestyle Tags */}
               <div>
                 <label className="block text-xs font-semibold text-neutral-700 mb-2">
@@ -333,11 +371,18 @@ export const BrowseFlatmates = () => {
 
         {/* Right Flatmates Grid */}
         <div className="lg:col-span-3">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-heading font-semibold text-neutral-900">
-              {isAuthenticated && myProfile ? 'Compatible Roommates' : 'Browse Roommates'}{' '}
-              {profiles.length > 0 && `(${profiles.length})`}
-            </h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-heading font-semibold text-neutral-900">
+                {isAuthenticated && myProfile ? 'Compatible Roommates' : 'Browse Roommates'}{' '}
+                {profiles.length > 0 && `(${profiles.length})`}
+              </h2>
+              {isAuthenticated && myProfile && (
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] bg-primary/10 text-primary font-medium px-2.5 py-0.5 rounded-full">
+                  <Sparkles size={11} /> Sorted by Relevance
+                </span>
+              )}
+            </div>
             {selectedTags.length > 0 && (
               <span className="text-xs text-primary font-medium">
                 Filtering by {selectedTags.length} habit{selectedTags.length > 1 ? 's' : ''}
@@ -514,16 +559,27 @@ export const BrowseFlatmates = () => {
                       )}
                     </div>
 
-                    {/* Connect CTA */}
-                    <div className="pt-3 border-t border-sky-100 mt-2">
+                    {/* Connect CTA & Report */}
+                    <div className="pt-3 border-t border-sky-100 mt-2 flex items-center gap-2">
                       <Button
                         variant="primary"
                         size="sm"
-                        className="w-full flex items-center justify-center gap-1.5 font-semibold shadow-xs hover:shadow-md transition-all"
+                        className="flex-1 flex items-center justify-center gap-1.5 font-semibold shadow-xs hover:shadow-md transition-all"
                         onClick={() => handleOpenConnect(p)}
                       >
                         <MessageCircle size={15} /> Connect with {userName.split(' ')[0]}
                       </Button>
+
+                      {(!user || user.id !== p.user_id) && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenReport(p)}
+                          className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors border border-sky-200 hover:border-red-200 shrink-0"
+                          title={`Report ${userName} for inappropriate behaviour`}
+                        >
+                          <Flag size={15} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 )
@@ -586,6 +642,16 @@ export const BrowseFlatmates = () => {
             </div>
           )}
         </Modal>
+      )}
+
+      {/* Report Student Modal */}
+      {reportTarget && (
+        <ReportUserModal
+          isOpen={!!reportTarget}
+          onClose={() => setReportTarget(null)}
+          reportedUser={reportTarget}
+          contextType="student"
+        />
       )}
     </div>
   )

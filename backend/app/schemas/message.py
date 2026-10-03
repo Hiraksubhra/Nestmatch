@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from app.schemas.user import UserResponse
 from app.schemas.listing import ListingResponse
 
@@ -26,7 +26,14 @@ class MessageResponse(BaseModel):
 class ConversationCreate(BaseModel):
     listing_id: Optional[str] = None
     landlord_id: Optional[str] = None
+    recipient_id: Optional[str] = None
     initial_message: Optional[str] = Field(None, min_length=1, max_length=5000)
+
+    @model_validator(mode="after")
+    def resolve_recipient(self):
+        if not self.landlord_id and self.recipient_id:
+            self.landlord_id = self.recipient_id
+        return self
 
 
 class ConversationResponse(BaseModel):

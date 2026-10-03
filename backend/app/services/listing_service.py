@@ -14,6 +14,7 @@ from app.models.listing import (
     GenderPreference,
     FurnishedStatus,
 )
+from app.models.user import User
 from app.schemas.listing import ListingCreate, ListingUpdate
 from app.core.exceptions import (
     NotFoundException,
@@ -126,6 +127,9 @@ class ListingService:
 
         if status:
             conditions.append(Listing.status == status)
+
+        # Shadow-ban exclusion: suppress listings from shadow-banned accounts in public search
+        conditions.append(Listing.landlord.has(or_(User.is_shadow_banned == False, User.is_shadow_banned.is_(None))))
 
         if city:
             conditions.append(func.lower(Listing.city) == city.strip().lower())

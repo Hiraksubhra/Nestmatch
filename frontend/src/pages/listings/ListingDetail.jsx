@@ -22,6 +22,7 @@ import {
   CreditCard,
   Star,
   Bookmark,
+  Flag,
 } from 'lucide-react'
 import { ROUTES } from '../../constants/routes'
 import { listingService } from '../../services/listingService'
@@ -30,6 +31,7 @@ import { bookingService } from '../../services/bookingService'
 import { reviewService } from '../../services/reviewService'
 import { savedListingService } from '../../services/savedListingService'
 import { AmenityIcon } from '../../components/listings/AmenityIcon'
+import { ReportUserModal } from '../../components/reports/ReportUserModal'
 import { useAuthStore } from '../../store/authStore'
 import { getImageUrl, formatCurrency } from '../../lib/utils'
 
@@ -76,6 +78,7 @@ export const ListingDetail = () => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [reviewError, setReviewError] = useState(null)
   const [reviewSuccess, setReviewSuccess] = useState(false)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
 
   const loadReviews = () => {
     setReviewsLoading(true)
@@ -737,16 +740,30 @@ export const ListingDetail = () => {
 
             {/* Landlord Profile Snapshot */}
             {listing.landlord && (
-              <div className="pt-4 border-t border-neutral-100 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0">
-                  {listing.landlord.full_name?.charAt(0) || 'L'}
+              <div className="pt-4 border-t border-neutral-100 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 truncate">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center shrink-0">
+                    {listing.landlord.full_name?.charAt(0) || 'L'}
+                  </div>
+                  <div className="truncate">
+                    <span className="text-xs text-neutral-400 block">Listed by</span>
+                    <span className="font-semibold text-neutral-900 text-sm truncate block">
+                      {listing.landlord.full_name}
+                    </span>
+                  </div>
                 </div>
-                <div className="truncate">
-                  <span className="text-xs text-neutral-400 block">Listed by</span>
-                  <span className="font-semibold text-neutral-900 text-sm truncate block">
-                    {listing.landlord.full_name}
-                  </span>
-                </div>
+
+                {(!user || user.id !== listing.landlord_id) && (
+                  <button
+                    type="button"
+                    onClick={() => setIsReportModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-neutral-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-neutral-200 hover:border-red-200 shrink-0"
+                    title="Report landlord for inappropriate behavior or policy violation"
+                  >
+                    <Flag size={13} />
+                    <span>Report</span>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1030,6 +1047,17 @@ export const ListingDetail = () => {
             )}
           </div>
         </div>
+      )}
+
+      {/* Report Landlord Modal */}
+      {listing?.landlord && (
+        <ReportUserModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          reportedUser={listing.landlord}
+          contextType="landlord"
+          listingTitle={listing.title}
+        />
       )}
     </div>
   )

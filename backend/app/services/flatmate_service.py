@@ -5,6 +5,7 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_
 from fastapi import HTTPException, status
+from sqlalchemy.orm import selectinload
 
 from app.models.flatmate import FlatmateProfile
 from app.models.user import User
@@ -160,6 +161,7 @@ class FlatmateService:
         max_budget: Optional[Decimal] = None,
         gender: Optional[str] = None,
         lifestyle_tags: Optional[List[str]] = None,
+        min_match: Optional[int] = None,
         page: int = 1,
         limit: int = 20,
     ) -> PaginatedFlatmateProfilesResponse:
@@ -168,7 +170,10 @@ class FlatmateService:
         if current_user:
             my_profile = await FlatmateService.get_my_profile(db, current_user.id)
 
-        conditions = [FlatmateProfile.is_active == True]
+        conditions = [
+            FlatmateProfile.is_active == True,
+            FlatmateProfile.user.has(or_(User.is_shadow_banned == False, User.is_shadow_banned.is_(None)))
+        ]
 
         # Don't show current user's own profile in search results
         if current_user:
@@ -194,19 +199,12 @@ class FlatmateService:
         if gender and gender.upper() != "ANY":
             conditions.append(func.lower(FlatmateProfile.gender) == gender.lower())
 
-        # Count total
-        count_query = select(func.count(FlatmateProfile.id)).where(and_(*conditions))
-        total_res = await db.execute(count_query)
-        total = total_res.scalar() or 0
-
-        # Query page
-        offset = (page - 1) * limit
+        # Query all active candidate profiles matching base criteria
         query = (
             select(FlatmateProfile)
             .where(and_(*conditions))
+            .options(selectinload(FlatmateProfile.user))
             .order_by(FlatmateProfile.created_at.desc())
-            .offset(offset)
-            .limit(limit)
         )
         results = await db.execute(query)
         profiles = results.scalars().all()
@@ -214,15 +212,17 @@ class FlatmateService:
         # Build responses with computed compatibility scores
         items: List[FlatmateProfileResponse] = []
         for p in profiles:
-            # If tags filter is supplied, optionally boost or filter
+            # If tags filter is supplied, check overlap
             if lifestyle_tags:
                 p_tags = set(t.lower() for t in (p.lifestyle_tags or []))
                 filter_tags = set(t.lower() for t in lifestyle_tags)
                 if not (p_tags & filter_tags):
-                    # No overlapping requested tags
                     continue
 
             score = calculate_compatibility_score(my_profile, p)
+            if min_match is not None and score is not None and score < min_match:
+                continue
+
             res = FlatmateProfileResponse.model_validate(p)
             res.compatibility_score = score
             items.append(res)
@@ -231,12 +231,15 @@ class FlatmateService:
         if my_profile:
             items.sort(key=lambda x: x.compatibility_score or 0, reverse=True)
 
-        pages = math.ceil(total / limit) if limit > 0 else 1
+        total = len(items)
+        offset = (page - 1) * limit
+        paged_items = items[offset : offset + limit] if limit > 0 else items
+        pages = math.ceil(total / limit) if (limit > 0 and total > 0) else 1
 
         return PaginatedFlatmateProfilesResponse(
             total=total,
             page=page,
             limit=limit,
             pages=pages,
-            items=items,
+            items=paged_items,
         )

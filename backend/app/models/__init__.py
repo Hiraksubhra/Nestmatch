@@ -24,6 +24,7 @@ from app.models.booking import (
 from app.models.flatmate import FlatmateProfile
 from app.models.review import Review
 from app.models.saved_listing import SavedListing
+from app.models.report import UserReport, ReportReason, ReportStatus
 
 __all__ = [
     "Base",
@@ -47,5 +48,8 @@ __all__ = [
     "FlatmateProfile",
     "Review",
     "SavedListing",
+    "UserReport",
+    "ReportReason",
+    "ReportStatus",
 ]
 

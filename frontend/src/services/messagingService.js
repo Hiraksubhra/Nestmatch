@@ -16,6 +16,11 @@ export const messagingService = {
     return res.data
   },
 
+  async getOrCreateConversation(data) {
+    const res = await api.post('/conversations', data)
+    return res.data
+  },
+
   async getMessages(conversationId, params = {}) {
     const res = await api.get(`/conversations/${conversationId}/messages`, { params })
     return res.data

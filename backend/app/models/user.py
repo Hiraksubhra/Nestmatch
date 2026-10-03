@@ -58,6 +58,19 @@ class User(Base):
         default=True,
         nullable=False
     )
+    is_shadow_banned: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+    shadow_banned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+    shadow_ban_reason: Mapped[str] = mapped_column(
+        String(255),
+        nullable=True
+    )
     oauth_provider: Mapped[str] = mapped_column(
         String(50),
         nullable=True

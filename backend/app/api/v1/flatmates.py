@@ -29,6 +29,7 @@ async def browse_flatmates(
     max_budget: Optional[Decimal] = Query(None, ge=0, description="Max budget filter"),
     gender: Optional[str] = Query(None, description="Gender: MALE, FEMALE, ANY"),
     tags: Optional[str] = Query(None, description="Comma-separated lifestyle tags"),
+    min_match: Optional[int] = Query(None, ge=0, le=100, description="Minimum match percentage threshold"),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     current_user: Optional[User] = Depends(get_optional_current_user),
@@ -47,6 +48,7 @@ async def browse_flatmates(
         max_budget=max_budget,
         gender=gender,
         lifestyle_tags=lifestyle_tags,
+        min_match=min_match,
         page=page,
         limit=limit,
     )

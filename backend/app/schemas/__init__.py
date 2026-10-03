@@ -44,6 +44,12 @@ from app.schemas.saved_listing import (
     SavedListingItemResponse,
     PaginatedSavedListingsResponse,
 )
+from app.schemas.report import (
+    ReportReasonItem,
+    ReportCreateRequest,
+    ReportResponse,
+    ReportReasonsResponse,
+)
 
 __all__ = [
     "UserCreate",
@@ -78,5 +84,9 @@ __all__ = [
     "SavedListingToggleResponse",
     "SavedListingItemResponse",
     "PaginatedSavedListingsResponse",
+    "ReportReasonItem",
+    "ReportCreateRequest",
+    "ReportResponse",
+    "ReportReasonsResponse",
 ]
 

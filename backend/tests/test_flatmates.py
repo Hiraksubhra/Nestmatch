@@ -98,10 +98,57 @@ async def test_flatmate_profile_crud_and_search(client: AsyncClient, db_session:
     assert detail_res.status_code == 200
     assert detail_res.json()["data"]["compatibility_score"] >= 70
 
-    # 8. Deactivate profile
+    # 8. Test min_match filter
+    match_high_res = await client.get("/api/v1/flatmates?city=Pune&min_match=95", headers=headers_a)
+    assert match_high_res.status_code == 200
+    # If 95% threshold is too high for the match, it filters it out
+    # If we filter with min_match=50, Student B is returned
+    match_mod_res = await client.get("/api/v1/flatmates?city=Pune&min_match=50", headers=headers_a)
+    assert match_mod_res.status_code == 200
+    assert len(match_mod_res.json()["data"]) == 1
+
+    # 9. Student A starts direct flatmate conversation with Student B (using user_id / landlord_id)
+    student_a_user_id = data_a["user_id"]
+    student_b_user_id = profile_b_res.json()["data"]["user_id"]
+    conv_res = await client.post(
+        "/api/v1/conversations",
+        headers=headers_a,
+        json={
+            "landlord_id": student_b_user_id,
+            "initial_message": "Hi Priya! Would you like to team up for a flat near Pune University?"
+        }
+    )
+    assert conv_res.status_code == 201
+    conv_data = conv_res.json()["data"]
+    conv_id = conv_data["id"]
+    assert conv_data["listing_id"] is None
+    assert conv_data["student_id"] == student_a_user_id
+    assert conv_data["landlord_id"] == student_b_user_id
+
+    # 10. Student B checks conversations and sees the message
+    b_convs_res = await client.get("/api/v1/conversations", headers=headers_b)
+    assert b_convs_res.status_code == 200
+    b_convs = b_convs_res.json()["data"]
+    assert len(b_convs) == 1
+    assert b_convs[0]["id"] == conv_id
+
+    # 11. Student B connects back with Student A (bidirectional get or create)
+    reconnect_res = await client.post(
+        "/api/v1/conversations",
+        headers=headers_b,
+        json={
+            "recipient_id": student_a_user_id,
+            "initial_message": "Sounds great! Let's check out listings."
+        }
+    )
+    assert reconnect_res.status_code == 201
+    # Must reuse the same conversation id!
+    assert reconnect_res.json()["data"]["id"] == conv_id
+
+    # 12. Deactivate profile
     deactivate_res = await client.delete("/api/v1/flatmates/me", headers=headers_b)
     assert deactivate_res.status_code == 200
 
-    # 9. Search again -> deactivated profile should not appear in active search
+    # 13. Search again -> deactivated profile should not appear in active search
     search_after_res = await client.get("/api/v1/flatmates?city=Pune", headers=headers_a)
     assert len(search_after_res.json()["data"]) == 0
