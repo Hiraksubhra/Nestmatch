@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     SENDGRID_API_KEY: str = ""
     FROM_EMAIL: str = "noreply@nestmatch.in"
     FRONTEND_URL: str = "http://localhost:5173"
+    GOOGLE_MAPS_API_KEY: str = ""
 
     @field_validator("ALLOWED_ORIGINS", mode="before")
     @classmethod

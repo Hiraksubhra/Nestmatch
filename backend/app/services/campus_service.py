@@ -68,24 +68,45 @@ class CampusService:
         query_parts = [p.strip() for p in [address_line1, locality, city, pincode, "India"] if p and p.strip()]
         query_str = ", ".join(query_parts)
 
-        # 1. Try Google Maps Geocoding API if configured
+        # 1. Try Google Maps Places API (New) & Geocoding API if configured
         if getattr(settings, "GOOGLE_MAPS_API_KEY", None):
             try:
                 async with httpx.AsyncClient(timeout=4.0) as client:
-                    resp = await client.get(
+                    # 1a. Try Places API (New) searchText endpoint (optimal for messy queries)
+                    places_resp = await client.post(
+                        "https://places.googleapis.com/v1/places:searchText",
+                        headers={
+                            "Content-Type": "application/json",
+                            "X-Goog-Api-Key": settings.GOOGLE_MAPS_API_KEY,
+                            "X-Goog-FieldMask": "places.formattedAddress,places.location",
+                        },
+                        json={"textQuery": query_str},
+                    )
+                    if places_resp.status_code == 200:
+                        p_data = places_resp.json()
+                        places = p_data.get("places", [])
+                        if places and "location" in places[0]:
+                            loc = places[0]["location"]
+                            formatted = places[0].get("formattedAddress", query_str)
+                            return float(loc["latitude"]), float(loc["longitude"]), formatted
+
+                    # 1b. Fallback to Geocoding API
+                    geo_resp = await client.get(
                         "https://maps.googleapis.com/maps/api/geocode/json",
                         params={
                             "address": query_str,
                             "key": settings.GOOGLE_MAPS_API_KEY,
                         },
                     )
-                    data = resp.json()
+                    data = geo_resp.json()
                     if data.get("status") == "OK" and data.get("results"):
                         loc = data["results"][0]["geometry"]["location"]
                         formatted = data["results"][0].get("formatted_address", query_str)
                         return float(loc["lat"]), float(loc["lng"]), formatted
+                    elif data.get("error_message"):
+                        logger.warning(f"Google Maps Geocoding error: {data.get('error_message')}")
             except Exception as e:
-                logger.warning(f"Google Geocoding failed, trying fallback: {e}")
+                logger.warning(f"Google Maps APIs failed, trying fallback: {e}")
 
         # 2. Try OpenStreetMap Nominatim with proper User-Agent
         try:
