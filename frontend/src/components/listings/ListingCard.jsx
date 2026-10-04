@@ -87,8 +87,8 @@ export const ListingCard = ({ listing, onBookmarkToggle, isBookmarked = false })
               {listing.locality ? `${listing.locality}, ` : ''}{listing.city}
             </span>
             {universityInfo && (
-              <span className="ml-auto font-medium text-primary text-[11px] bg-primary/10 px-2 py-0.5 rounded">
-                {universityInfo.distance_km} km to {universityInfo.name}
+              <span className="ml-auto font-medium text-primary text-[11px] bg-primary/10 px-2 py-0.5 rounded whitespace-nowrap shrink-0">
+                {universityInfo.distance_km} km ({universityInfo.walking_time_mins || Math.round(universityInfo.distance_km * 12)} min walk)
               </span>
             )}
           </div>

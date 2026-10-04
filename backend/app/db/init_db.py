@@ -42,6 +42,10 @@ def check_and_add_user_columns(connection):
             connection.execute(text("ALTER TABLE users ADD COLUMN shadow_banned_at DATETIME"))
         if "shadow_ban_reason" not in columns:
             connection.execute(text("ALTER TABLE users ADD COLUMN shadow_ban_reason VARCHAR(255)"))
+    if "listings" in inspector.get_table_names():
+        columns = [c["name"] for c in inspector.get_columns("listings")]
+        if "location" not in columns:
+            connection.execute(text("ALTER TABLE listings ADD COLUMN location TEXT"))
 
 
 async def init_db() -> None:

@@ -50,6 +50,15 @@ class ListingService:
             new_listing.amenities = list(amenities_res.scalars().all())
 
         session.add(new_listing)
+        await session.flush()
+
+        # Dynamically calculate coordinates & campus proximity using PostGIS engine
+        try:
+            from app.services.campus_service import CampusService
+            await CampusService.enrich_listing_proximity(session, new_listing)
+        except Exception as e:
+            logger.warning(f"Error enriching listing proximity: {e}")
+
         await session.commit()
         await session.refresh(new_listing)
         return await ListingService.get_by_id(session, new_listing.id)
@@ -102,6 +111,13 @@ class ListingService:
             if hasattr(listing, key) and value is not None:
                 setattr(listing, key, value)
 
+        # Re-calculate dynamic coordinates & proximity if location changed
+        try:
+            from app.services.campus_service import CampusService
+            await CampusService.enrich_listing_proximity(session, listing)
+        except Exception as e:
+            logger.warning(f"Error re-enriching listing proximity: {e}")
+
         await session.commit()
         await session.refresh(listing)
         return await ListingService.get_by_id(session, listing.id)
@@ -118,6 +134,8 @@ class ListingService:
         max_rent: Optional[Decimal] = None,
         amenity_ids: Optional[List[int]] = None,
         search_query: Optional[str] = None,
+        campus_id: Optional[str] = None,
+        max_distance_km: Optional[float] = None,
         status: Optional[str] = ListingStatus.ACTIVE.value,
         sort: str = "newest",
         page: int = 1,
@@ -176,11 +194,13 @@ class ListingService:
                 )
                 conditions.append(Listing.id.in_(subq))
 
-        # Count total
-        count_stmt = select(func.count(Listing.id)).where(and_(*conditions))
-        total_count = (await session.execute(count_stmt)).scalar() or 0
+        # Check if campus-specific spatial filtering or sorting is requested
+        target_campus = None
+        if campus_id:
+            from app.models.campus import Campus
+            target_campus = await session.get(Campus, campus_id)
 
-        # Base query with ordering
+        # Base query with options
         stmt = (
             select(Listing)
             .where(and_(*conditions))
@@ -190,6 +210,66 @@ class ListingService:
                 selectinload(Listing.landlord),
             )
         )
+
+        # If campus distance filtering/sorting is requested
+        if target_campus:
+            from app.services.campus_service import calculate_geodesic_distance, estimate_walking_time_mins
+            c_lat = float(target_campus.latitude)
+            c_lon = float(target_campus.longitude)
+
+            all_results = await session.execute(stmt)
+            all_listings = all_results.scalars().all()
+
+            filtered = []
+            for item in all_listings:
+                if item.latitude is not None and item.longitude is not None:
+                    dist_km = calculate_geodesic_distance(
+                        float(item.latitude), float(item.longitude), c_lat, c_lon
+                    )
+                else:
+                    dist_km = 999.0
+
+                if max_distance_km is not None and dist_km > max_distance_km:
+                    continue
+
+                # Inject dynamic campus proximity at head of list
+                campus_info = {
+                    "campus_id": target_campus.id,
+                    "name": target_campus.name,
+                    "short_name": target_campus.short_name,
+                    "distance_km": dist_km,
+                    "walking_time_mins": estimate_walking_time_mins(dist_km),
+                }
+                existing = [p for p in (item.university_proximity or []) if p.get("name") != target_campus.name]
+                item.university_proximity = [campus_info] + existing
+                item._campus_dist = dist_km
+                filtered.append(item)
+
+            if sort in ("distance_asc", "proximity", "nearest"):
+                filtered.sort(key=lambda x: getattr(x, "_campus_dist", 999.0))
+            elif sort == "price_asc":
+                filtered.sort(key=lambda x: x.rent_amount)
+            elif sort == "price_desc":
+                filtered.sort(key=lambda x: x.rent_amount, reverse=True)
+            elif sort == "views":
+                filtered.sort(key=lambda x: x.views_count, reverse=True)
+
+            total_count = len(filtered)
+            offset = (page - 1) * limit
+            paged_items = filtered[offset : offset + limit] if limit > 0 else filtered
+            pages = (total_count + limit - 1) // limit if limit > 0 else 1
+
+            return {
+                "total": total_count,
+                "page": page,
+                "limit": limit,
+                "pages": pages,
+                "items": paged_items,
+            }
+
+        # Standard non-campus pagination
+        count_stmt = select(func.count(Listing.id)).where(and_(*conditions))
+        total_count = (await session.execute(count_stmt)).scalar() or 0
 
         if sort == "price_asc":
             stmt = stmt.order_by(asc(Listing.rent_amount))

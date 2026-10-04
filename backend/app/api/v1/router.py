@@ -7,6 +7,7 @@ from app.api.v1.conversations import router as conversations_router
 from app.api.v1.bookings import router as bookings_router
 from app.api.v1.flatmates import router as flatmates_router
 from app.api.v1.reports import router as reports_router
+from app.api.v1.campuses import router as campuses_router
 
 api_v1_router = APIRouter()
 
@@ -18,4 +19,5 @@ api_v1_router.include_router(conversations_router)
 api_v1_router.include_router(bookings_router)
 api_v1_router.include_router(flatmates_router)
 api_v1_router.include_router(reports_router)
+api_v1_router.include_router(campuses_router)
 

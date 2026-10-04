@@ -51,4 +51,9 @@ export const listingService = {
   deletePhoto: async (listingId, photoId) => {
     return api.delete(`/listings/${listingId}/photos/${photoId}`)
   },
+
+  // Geocode address preview
+  geocodeAddress: async (addressData) => {
+    return api.post('/listings/geocode-preview', addressData)
+  },
 }

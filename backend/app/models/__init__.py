@@ -25,6 +25,7 @@ from app.models.flatmate import FlatmateProfile
 from app.models.review import Review
 from app.models.saved_listing import SavedListing
 from app.models.report import UserReport, ReportReason, ReportStatus
+from app.models.campus import Campus
 
 __all__ = [
     "Base",
@@ -51,5 +52,6 @@ __all__ = [
     "UserReport",
     "ReportReason",
     "ReportStatus",
+    "Campus",
 ]
 

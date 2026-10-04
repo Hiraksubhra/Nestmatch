@@ -23,6 +23,8 @@ import {
   Star,
   Bookmark,
   Flag,
+  GraduationCap,
+  ExternalLink,
 } from 'lucide-react'
 import { ROUTES } from '../../constants/routes'
 import { listingService } from '../../services/listingService'
@@ -417,6 +419,66 @@ export const ListingDetail = () => {
               <p className="text-sm text-neutral-500">Contact the landlord for specific amenity details.</p>
             )}
           </div>
+
+          {/* Campus Proximity & Geotracking Section */}
+          {Array.isArray(listing.university_proximity) && listing.university_proximity.length > 0 && (
+            <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="text-primary" size={22} />
+                  <div>
+                    <h2 className="text-lg font-heading font-semibold text-neutral-900">
+                      Nearby Campuses & Walking Distance
+                    </h2>
+                    <p className="text-xs text-neutral-500">
+                      Real-time PostGIS proximity calculations
+                    </p>
+                  </div>
+                </div>
+                {listing.latitude && listing.longitude && (
+                  <span className="text-[11px] font-mono bg-neutral-100 text-neutral-600 px-2 py-1 rounded-md">
+                    {Number(listing.latitude).toFixed(4)}°N, {Number(listing.longitude).toFixed(4)}°E
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {listing.university_proximity.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-xl border border-neutral-100 bg-neutral-50/70 hover:bg-neutral-50 transition-colors flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold text-sm text-neutral-900">{item.name}</p>
+                      <p className="text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
+                        <span className="font-medium text-primary">
+                          {item.distance_km} km away
+                        </span>
+                        <span>•</span>
+                        <span>
+                          ~{item.walking_time_mins || Math.round(item.distance_km * 12)} min walk
+                        </span>
+                      </p>
+                    </div>
+
+                    {listing.latitude && listing.longitude && (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                          item.name + ' ' + listing.city
+                        )}&origin=${listing.latitude},${listing.longitude}&travelmode=walking`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 hover:text-primary hover:border-primary transition-colors text-xs flex items-center gap-1 shrink-0"
+                        title="Open walking directions in Google Maps"
+                      >
+                        <ExternalLink size={14} />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Sprint 3: Reviews & Ratings Section */}
           <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm space-y-6">

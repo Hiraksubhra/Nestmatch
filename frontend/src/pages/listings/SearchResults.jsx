@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search, SlidersHorizontal, RotateCcw, Building2, Home, MapPin, IndianRupee, Loader2 } from 'lucide-react'
+import { Search, SlidersHorizontal, RotateCcw, Building2, Home, MapPin, IndianRupee, Loader2, GraduationCap } from 'lucide-react'
 import { listingService } from '../../services/listingService'
+import { campusService } from '../../services/campusService'
 import { ListingCard } from '../../components/listings/ListingCard'
 
 const CITIES = ['All Cities', 'Pune', 'Bengaluru', 'Delhi NCR', 'Mumbai', 'Hyderabad', 'Kota', 'Noida', 'Chennai']
@@ -18,6 +19,7 @@ export const SearchResults = () => {
 
   const [listings, setListings] = useState([])
   const [amenitiesList, setAmenitiesList] = useState([])
+  const [campusesList, setCampusesList] = useState([])
   const [totalCount, setTotalCount] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
@@ -26,6 +28,8 @@ export const SearchResults = () => {
   // Draft Filters State (applied only when user clicks "Apply Filters")
   const [draftFilters, setDraftFilters] = useState({
     city: searchParams.get('city') || '',
+    campus_id: searchParams.get('campus_id') || '',
+    max_distance_km: searchParams.get('max_distance_km') || '',
     property_type: searchParams.get('property_type') || '',
     gender: searchParams.get('gender') || '',
     min_rent: searchParams.get('min_rent') || '',
@@ -41,6 +45,8 @@ export const SearchResults = () => {
   useEffect(() => {
     setDraftFilters({
       city: searchParams.get('city') || '',
+      campus_id: searchParams.get('campus_id') || '',
+      max_distance_km: searchParams.get('max_distance_km') || '',
       property_type: searchParams.get('property_type') || '',
       gender: searchParams.get('gender') || '',
       min_rent: searchParams.get('min_rent') || '',
@@ -55,6 +61,8 @@ export const SearchResults = () => {
 
   // Active filters applied in the URL
   const activeCity = searchParams.get('city') || ''
+  const activeCampusId = searchParams.get('campus_id') || ''
+  const activeMaxDistanceKm = searchParams.get('max_distance_km') || ''
   const activePropertyType = searchParams.get('property_type') || ''
   const activeGender = searchParams.get('gender') || ''
   const activeMinRent = searchParams.get('min_rent') || ''
@@ -77,6 +85,18 @@ export const SearchResults = () => {
       .catch(() => {})
   }, [])
 
+  // Load campuses (optionally for draft or active city)
+  useEffect(() => {
+    const cityFilter = draftFilters.city && draftFilters.city !== 'All Cities' ? draftFilters.city : null
+    campusService.getCampuses(cityFilter)
+      .then((res) => {
+        if (res?.data) {
+          setCampusesList(res.data)
+        }
+      })
+      .catch(() => {})
+  }, [draftFilters.city])
+
   // Fetch listings on URL searchParams change
   useEffect(() => {
     const fetchListings = async () => {
@@ -88,6 +108,8 @@ export const SearchResults = () => {
           sort: activeSort,
         }
         if (activeCity && activeCity !== 'All Cities') params.city = activeCity
+        if (activeCampusId) params.campus_id = activeCampusId
+        if (activeMaxDistanceKm) params.max_distance_km = activeMaxDistanceKm
         if (activePropertyType) params.property_type = activePropertyType
         if (activeGender && activeGender !== 'ANY') params.gender_preference = activeGender
         if (activeMinRent) params.min_rent = activeMinRent
@@ -114,6 +136,8 @@ export const SearchResults = () => {
   const handleApplyFilters = () => {
     const nextParams = new URLSearchParams()
     if (draftFilters.city && draftFilters.city !== 'All Cities') nextParams.set('city', draftFilters.city)
+    if (draftFilters.campus_id) nextParams.set('campus_id', draftFilters.campus_id)
+    if (draftFilters.max_distance_km) nextParams.set('max_distance_km', draftFilters.max_distance_km)
     if (draftFilters.property_type) nextParams.set('property_type', draftFilters.property_type)
     if (draftFilters.gender && draftFilters.gender !== 'ANY') nextParams.set('gender', draftFilters.gender)
     if (draftFilters.min_rent) nextParams.set('min_rent', draftFilters.min_rent)
@@ -129,6 +153,8 @@ export const SearchResults = () => {
   const handleResetFilters = () => {
     setDraftFilters({
       city: '',
+      campus_id: '',
+      max_distance_km: '',
       property_type: '',
       gender: '',
       min_rent: '',
@@ -168,6 +194,8 @@ export const SearchResults = () => {
   // Count active draft filters
   const activeDraftFilterCount = [
     draftFilters.city && draftFilters.city !== 'All Cities',
+    draftFilters.campus_id,
+    draftFilters.max_distance_km,
     draftFilters.property_type,
     draftFilters.gender,
     draftFilters.min_rent,
@@ -222,6 +250,7 @@ export const SearchResults = () => {
               className="bg-white border border-neutral-300 rounded-xl px-3 py-2 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               <option value="newest">Newest First</option>
+              <option value="distance_asc">Nearest to Campus</option>
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>
               <option value="views">Most Popular</option>
@@ -271,6 +300,7 @@ export const SearchResults = () => {
                 setDraftFilters((prev) => ({
                   ...prev,
                   city: e.target.value === 'All Cities' ? '' : e.target.value,
+                  campus_id: '', // reset campus if city changes
                 }))
               }
               className="w-full bg-neutral-50 border border-neutral-200 rounded-xl p-2.5 text-sm text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -281,6 +311,65 @@ export const SearchResults = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Campus Proximity Filter (PostGIS Spatial) */}
+          <div className="bg-primary/5 p-3.5 rounded-xl border border-primary/15 space-y-3">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-primary flex items-center gap-1.5">
+              <GraduationCap size={15} />
+              College / University
+            </label>
+            <select
+              value={draftFilters.campus_id}
+              onChange={(e) => {
+                const nextCampus = e.target.value
+                setDraftFilters((prev) => ({
+                  ...prev,
+                  campus_id: nextCampus,
+                  // Auto set sort to distance if selecting a campus
+                  sort: nextCampus ? 'distance_asc' : prev.sort,
+                  max_distance_km: nextCampus && !prev.max_distance_km ? '5' : prev.max_distance_km,
+                }))
+              }}
+              className="w-full bg-white border border-primary/20 rounded-lg p-2 text-xs text-neutral-800 focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="">Select Campus / College</option>
+              {campusesList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.short_name || c.name} ({c.locality || c.city})
+                </option>
+              ))}
+            </select>
+
+            {draftFilters.campus_id && (
+              <div className="pt-2 border-t border-primary/10">
+                <div className="flex items-center justify-between text-[11px] font-medium text-neutral-600 mb-1.5">
+                  <span>Max Radius:</span>
+                  <span className="font-bold text-primary">
+                    {draftFilters.max_distance_km ? `< ${draftFilters.max_distance_km} km` : 'Any'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-1">
+                  {['2', '5', '10', ''].map((dist) => (
+                    <button
+                      key={dist}
+                      type="button"
+                      onClick={() => setDraftFilters((prev) => ({ ...prev, max_distance_km: dist }))}
+                      className={`py-1 text-[11px] rounded font-medium transition-colors ${
+                        draftFilters.max_distance_km === dist
+                          ? 'bg-primary text-white'
+                          : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50'
+                      }`}
+                    >
+                      {dist ? `${dist}km` : 'All'}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-neutral-500 mt-2">
+                  📍 PostGIS real-time spatial calculation
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Property Type Filter */}

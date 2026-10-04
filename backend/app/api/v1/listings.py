@@ -23,14 +23,53 @@ from app.schemas.saved_listing import (
     SavedListingToggleResponse,
     PaginatedSavedListingsResponse,
 )
+from app.schemas.campus import GeocodePreviewRequest, GeocodePreviewResponse
 from app.services.listing_service import ListingService
 from app.services.photo_service import PhotoService
 from app.services.review_service import ReviewService
 from app.services.saved_listing_service import SavedListingService
+from app.services.campus_service import CampusService
 from app.core.exceptions import ForbiddenException
 
 
 router = APIRouter(prefix="/listings", tags=["Listings"])
+
+
+@router.post(
+    "/geocode-preview",
+    status_code=status.HTTP_200_OK,
+    summary="Preview geocoded coordinates and nearby campus distances"
+)
+async def geocode_preview(
+    data: GeocodePreviewRequest,
+    session: AsyncSession = Depends(get_db),
+):
+    lat, lon, formatted = await CampusService.geocode_address(
+        address_line1=data.address_line1,
+        locality=data.locality,
+        city=data.city,
+        pincode=data.pincode,
+    )
+    nearby = []
+    if lat is not None and lon is not None:
+        nearby = await CampusService.get_nearby_campuses(
+            session=session,
+            latitude=lat,
+            longitude=lon,
+            city=data.city,
+            max_distance_km=15.0,
+            limit=4,
+        )
+
+    return {
+        "success": True,
+        "data": {
+            "latitude": lat,
+            "longitude": lon,
+            "formatted_address": formatted,
+            "nearby_campuses": nearby,
+        }
+    }
 
 
 @router.get(
@@ -63,7 +102,9 @@ async def search_listings(
     max_rent: Optional[Decimal] = Query(None, ge=0, description="Maximum rent amount"),
     amenities: Optional[str] = Query(None, description="Comma-separated amenity IDs e.g. 1,2,3"),
     search: Optional[str] = Query(None, description="Free text search on title/desc/locality"),
-    sort: Optional[str] = Query("newest", description="sort option: newest, price_asc, price_desc, views"),
+    campus_id: Optional[str] = Query(None, description="Filter by distance to specific university campus"),
+    max_distance_km: Optional[float] = Query(None, ge=0.1, le=50.0, description="Maximum distance from campus in km"),
+    sort: Optional[str] = Query("newest", description="sort option: newest, price_asc, price_desc, views, distance_asc"),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     session: AsyncSession = Depends(get_db)
@@ -86,6 +127,8 @@ async def search_listings(
         max_rent=max_rent,
         amenity_ids=amenity_ids,
         search_query=search,
+        campus_id=campus_id,
+        max_distance_km=max_distance_km,
         status=ListingStatus.ACTIVE.value,
         sort=sort,
         page=page,

@@ -18,6 +18,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+from app.db.spatial import GeoPoint
 
 
 class PropertyType(str, Enum):
@@ -137,6 +138,7 @@ class Listing(Base):
     pincode: Mapped[Optional[str]] = mapped_column(String(10), nullable=True)
     latitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 7), nullable=True)
     longitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 7), nullable=True)
+    location: Mapped[Optional[Any]] = mapped_column(GeoPoint, nullable=True)
     university_proximity: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     gender_preference: Mapped[str] = mapped_column(String(20), default=GenderPreference.ANY.value, nullable=False)
     furnished_status: Mapped[str] = mapped_column(String(20), default=FurnishedStatus.FURNISHED.value, nullable=False)
