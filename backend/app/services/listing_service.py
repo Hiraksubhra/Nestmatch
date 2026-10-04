@@ -1,4 +1,5 @@
 import uuid
+import logging
 from decimal import Decimal
 from typing import Optional, List, Dict, Any
 from sqlalchemy import select, func, and_, or_, desc, asc
@@ -22,6 +23,7 @@ from app.core.exceptions import (
     ForbiddenException,
 )
 
+logger = logging.getLogger(__name__)
 
 class ListingService:
     @staticmethod
