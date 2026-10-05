@@ -233,7 +233,7 @@ class BookingService:
                 conv.id,
                 "🎉 Booking Request Accepted! Contact details and move-in information are now confirmed and unlocked."
             )
-
+            
         # Email notification
         if booking.student:
             await email_service.send_booking_status_notification(

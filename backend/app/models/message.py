@@ -9,7 +9,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.user import User
     from app.models.listing import Listing
-
+    
 
 class MessageType(str, Enum):
     TEXT = "TEXT"
