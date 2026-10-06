@@ -64,3 +64,5 @@ Thumbs.db
 **/*.md
 !README.md
 !readme.md
+
+*.docx
